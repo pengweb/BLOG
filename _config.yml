@@ -64,7 +64,7 @@ pagination_dir: page
 duoshuo_shortname: pengweb
 
 # Place your favicon.ico to /source directory.
-favicon: /favicon.ico
+#favicon: /favicon.ico
 
 # Extensions
 ## Plugins: https://hexo.io/plugins/
