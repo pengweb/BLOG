@@ -1,11 +1,10 @@
 ---
 title: Git命令使用
 date: 2016-03-19 17:27:09
-tags: [others]
----
-[TOC]
-#1.创建本地仓库
+tags: [others，git,github]
 
+---
+# 1.创建本地仓库
 ``` bash
 //创建一个要同步文件夹，并且进入这个文件夹
 git init //初始化git

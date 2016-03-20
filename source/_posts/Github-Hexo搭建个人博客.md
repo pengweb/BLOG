@@ -1,9 +1,9 @@
 ---
 title: Github+Hexo搭建个人博客
 date: 2016-03-19 17:03:02
-tags: [others]
----
+tags: [others,github,hexo,SSH]
 
+---
 # 1.安装环境
 Git --我开始用的是2.7，但是发布经常出问题，换回1.9就没问题了(折腾了很久)
 Nodejs --我用的是5.9没有发现问题
