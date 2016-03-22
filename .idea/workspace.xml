@@ -2,30 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="07a62c8c-154b-43e4-b46b-a339829e634b" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/source/images/11111.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/source/images/143136_Wd2M_1540325.png" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/source/images/143620_u3yx_1540325.png" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/source/images/2014091409260873.png" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/source/images/54586e9b0001838b05000495.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/source/images/Gulpjs01.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/source/images/Gulpjs02.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/source/images/linux命令.png" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/source/images/图解.jpg" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/source/_posts/Ejs学习总结.md" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/themes/hexo-theme-monogatari" afterPath="$PROJECT_DIR$/themes/hexo-theme-monogatari" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/themes/hexo-theme-monogatari/source/asset/img/favicon.png" afterPath="$PROJECT_DIR$/themes/hexo-theme-monogatari/source/asset/img/favicon.png" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/themes/hexo-theme-monogatari/source/asset/img/logo.png" afterPath="$PROJECT_DIR$/themes/hexo-theme-monogatari/source/asset/img/logo.png" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/source/_posts/CSS-笔记.md" afterPath="$PROJECT_DIR$/source/_posts/CSS-笔记.md" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/source/_posts/Github-Hexo搭建个人博客.md" afterPath="$PROJECT_DIR$/source/_posts/Github-Hexo搭建个人博客.md" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/source/_posts/HTML-笔记.md" afterPath="$PROJECT_DIR$/source/_posts/HTML-笔记.md" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/source/_posts/HTTP-TCP协议-笔记.md" afterPath="$PROJECT_DIR$/source/_posts/HTTP-TCP协议-笔记.md" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/source/_posts/hello-world.md" afterPath="$PROJECT_DIR$/source/_posts/hello-world.md" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/source/_posts/jQuery-笔记.md" afterPath="$PROJECT_DIR$/source/_posts/jQuery-笔记.md" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/source/_posts/javascript数据结构与算法-笔记.md" afterPath="$PROJECT_DIR$/source/_posts/javascript数据结构与算法-笔记.md" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/source/_posts/javascript高性能-笔记.md" afterPath="$PROJECT_DIR$/source/_posts/javascript高性能-笔记.md" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/source/_posts/javascript高级程序设计-笔记.md" afterPath="$PROJECT_DIR$/source/_posts/javascript高级程序设计-笔记.md" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/source/_posts/正则表达式-笔记.md" afterPath="$PROJECT_DIR$/source/_posts/正则表达式-笔记.md" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/themes/hexo-theme-monogatari/_config.yaml" afterPath="$PROJECT_DIR$/themes/hexo-theme-monogatari/_config.yaml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/themes/hexo-theme-monogatari/layout/_layout/footer.ejs" afterPath="$PROJECT_DIR$/themes/hexo-theme-monogatari/layout/_layout/footer.ejs" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/themes/hexo-theme-monogatari/layout/_layout/header.ejs" afterPath="$PROJECT_DIR$/themes/hexo-theme-monogatari/layout/_layout/header.ejs" />
@@ -62,8 +41,8 @@
         <entry file="file://$PROJECT_DIR$/source/_posts/Ejs学习总结.md">
           <provider selected="true" editor-type-id="split-provider[text-editor;MultiMarkdownPreviewEditor]">
             <state split_layout="FIRST">
-              <first_editor relative-caret-position="1428">
-                <caret line="84" column="31" selection-start-line="84" selection-start-column="31" selection-end-line="84" selection-end-column="31" />
+              <first_editor relative-caret-position="323">
+                <caret line="19" column="12" selection-start-line="19" selection-start-column="12" selection-end-line="19" selection-end-column="12" />
                 <folding />
               </first_editor>
               <second_editor />
@@ -197,105 +176,7 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="themes" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Blog" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Blog" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="themes" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="hexo-theme-monogatari" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Blog" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Blog" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="themes" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="hexo-theme-monogatari" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
               <option name="myItemId" value="source" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="asset" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Blog" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Blog" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="themes" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="hexo-theme-monogatari" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="layout" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Blog" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Blog" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="source" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Blog" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Blog" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="source" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="images" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -424,15 +305,15 @@
       <workItem from="1458524277728" duration="1415000" />
       <workItem from="1458525861389" duration="11995000" />
       <workItem from="1458569211253" duration="7015000" />
-      <workItem from="1458610449847" duration="1359000" />
+      <workItem from="1458610449847" duration="1588000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="65136000" />
+    <option name="totallyTimeSpent" value="65365000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1382" height="744" extended-state="6" />
+    <frame x="-8" y="-8" width="1382" height="744" extended-state="7" />
     <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.27452415" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -1036,8 +917,8 @@
     <entry file="file://$PROJECT_DIR$/source/_posts/Ejs学习总结.md">
       <provider selected="true" editor-type-id="split-provider[text-editor;MultiMarkdownPreviewEditor]">
         <state split_layout="FIRST">
-          <first_editor relative-caret-position="1428">
-            <caret line="84" column="31" selection-start-line="84" selection-start-column="31" selection-end-line="84" selection-end-column="31" />
+          <first_editor relative-caret-position="323">
+            <caret line="19" column="12" selection-start-line="19" selection-start-column="12" selection-end-line="19" selection-end-column="12" />
             <folding />
           </first_editor>
           <second_editor />
