@@ -34,7 +34,8 @@
 		//favicon = 'favicon.ico';
 		favicon = 'favicon.png';
 	}
-	favicon = config.url + '/' + favicon;
+	//favicon = config.url + '/' + favicon;
+	favicon = '/' + favicon;
 
 	var image_src = theme.image_src;
 	if (is_home()) {
@@ -46,7 +47,7 @@
 	if (!image_src) {
 		image_src = 'logo.png';
 	}
-	image_src = config.url + '/' + image_src;
+	image_src = '/' + image_src;
 
 	var rss = theme.rss;
 	if (!rss) {
