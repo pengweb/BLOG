@@ -2,30 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="07a62c8c-154b-43e4-b46b-a339829e634b" name="Default" comment="add">
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/vcs.xml" afterPath="$PROJECT_DIR$/.idea/vcs.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
-    <list id="f9745896-3a85-4208-bb71-11c95b13a661" name="Rejected commit: Default" comment="add">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/themes/hexo-theme-monogatari/source/asset/img/logo1.png" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/themes/hexo-theme-monogatari/source/asset/img/logo2.png" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/themes/hexo-theme-monogatari/source/asset/img/logo3.png" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/themes/hexo-theme-monogatari/source/asset/img/logo4.png" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/themes/hexo-theme-monogatari/source/asset/img/logo5.png" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/themes/hexo-theme-monogatari/source/asset/img/logo6.png" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/themes/hexo-theme-monogatari/source/asset/img/logo7.png" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/themes/hexo-theme-monogatari/source/asset/img/favicon.png" afterPath="$PROJECT_DIR$/themes/hexo-theme-monogatari/source/asset/img/favicon.png" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/themes/hexo-theme-monogatari/source/asset/img/logo.png" afterPath="$PROJECT_DIR$/themes/hexo-theme-monogatari/source/asset/img/logo.png" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/themes/hexo-theme-monogatari/_config.yaml" afterPath="$PROJECT_DIR$/themes/hexo-theme-monogatari/_config.yaml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/themes/hexo-theme-monogatari/layout/_layout/footer.ejs" afterPath="$PROJECT_DIR$/themes/hexo-theme-monogatari/layout/_layout/footer.ejs" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/themes/hexo-theme-monogatari/layout/_layout/header.ejs" afterPath="$PROJECT_DIR$/themes/hexo-theme-monogatari/layout/_layout/header.ejs" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/themes/hexo-theme-monogatari/layout/_widget/post-item.ejs" afterPath="$PROJECT_DIR$/themes/hexo-theme-monogatari/layout/_widget/post-item.ejs" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/themes/hexo-theme-monogatari/source/asset/css/_base/_syntax.styl" afterPath="$PROJECT_DIR$/themes/hexo-theme-monogatari/source/asset/css/_base/_syntax.styl" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/themes/hexo-theme-monogatari/source/asset/css/_highlight/_monokai.styl" afterPath="$PROJECT_DIR$/themes/hexo-theme-monogatari/source/asset/css/_highlight/_monokai.styl" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/themes/hexo-theme-monogatari/source/asset/css/_layout/_archive.styl" afterPath="$PROJECT_DIR$/themes/hexo-theme-monogatari/source/asset/css/_layout/_archive.styl" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/themes/hexo-theme-monogatari/source/asset/css/_layout/_article.styl" afterPath="$PROJECT_DIR$/themes/hexo-theme-monogatari/source/asset/css/_layout/_article.styl" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/themes/hexo-theme-monogatari/source/asset/css/_layout/_content.styl" afterPath="$PROJECT_DIR$/themes/hexo-theme-monogatari/source/asset/css/_layout/_content.styl" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/themes/hexo-theme-monogatari/source/asset/css/_layout/_footer.styl" afterPath="$PROJECT_DIR$/themes/hexo-theme-monogatari/source/asset/css/_layout/_footer.styl" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/themes/hexo-theme-monogatari/source/asset/css/_layout/_menu.styl" afterPath="$PROJECT_DIR$/themes/hexo-theme-monogatari/source/asset/css/_layout/_menu.styl" />
-    </list>
+    <list id="f9745896-3a85-4208-bb71-11c95b13a661" name="Rejected commit: Default" comment="add" />
     <ignored path="Blog.iws" />
     <ignored path=".idea/workspace.xml" />
     <ignored path=".idea/dataSources.local.xml" />
@@ -125,7 +105,7 @@
     </leaf>
   </component>
   <component name="Git.Settings">
-    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/themes/hexo-theme-monogatari" />
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="GradleLocalSettings">
     <option name="externalProjectsViewState">
@@ -267,130 +247,6 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Blog" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Blog" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="themes" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="hexo-theme-monogatari" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="source" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="asset" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Blog" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Blog" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="themes" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="hexo-theme-monogatari" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="source" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="asset" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="css" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Blog" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Blog" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="themes" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="hexo-theme-monogatari" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="source" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="asset" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="css" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="_layout" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Blog" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Blog" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="themes" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="hexo-theme-monogatari" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="source" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="asset" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="css" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="_base" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
         </subPane>
       </pane>
       <pane id="PackagesPane" />
@@ -402,7 +258,7 @@
     <property name="HbShouldOpenHtmlAsHb" value="" />
     <property name="SearchEverywhereHistoryKey" value="pre&#9;null&#9;null&#10;.layout-menu&#9;null&#9;null&#10;highlight&#9;null&#9;null&#10;.box-archive-list&#9;null&#9;null" />
     <property name="aspect.path.notification.shown" value="true" />
-    <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
+    <property name="settings.editor.selected.configurable" value="project.propVCSSupport.Mappings" />
     <property name="settings.editor.splitter.proportion" value="0.2" />
     <property name="js-jscs-nodeInterpreter" value="C:\Program Files\nodejs\node.exe" />
   </component>
@@ -498,18 +354,18 @@
       <workItem from="1458524277728" duration="1415000" />
       <workItem from="1458525861389" duration="11995000" />
       <workItem from="1458569211253" duration="7015000" />
-      <workItem from="1458610449847" duration="3004000" />
+      <workItem from="1458610449847" duration="3129000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="66781000" />
+    <option name="totallyTimeSpent" value="66906000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1382" height="744" extended-state="7" />
-    <editor active="true" />
+    <frame x="-8" y="-8" width="1382" height="744" extended-state="6" />
+    <editor active="false" />
     <layout>
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.27452415" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.27452415" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.329653" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
