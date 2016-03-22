@@ -1,0 +1,111 @@
+
+		<div class="row panel-content panel-post-item">
+			<div class="box-post-item">
+				<article class="post-item" itemscope itemtype="http://schema.org/Article">
+
+
+<%
+	if (page.video) {
+%>
+					<div class="video-container">
+						<iframe src="//www.youtube.com/embed/<%= page.video %>" frameborder="0" allowfullscreen></iframe>
+					</div>
+<%
+	}
+%>
+
+					<p class="content-meta">
+						<span class="meta-date" itemprop="datePublished" content="<%= date(page.date) %>"><%= date(page.date) %></span>
+
+<%
+	if (page.categories && page.categories.length) {
+%>
+							<span class="meta-category">
+
+<%-
+	list_categories(page.categories, {
+		show_count: false,
+		style: 'none',
+		separator: ', '
+
+	})
+%>
+							</span>
+<%
+	}
+%>
+					</p>
+
+<%
+	var title = page.title;
+	if (!title) {
+		title = 'No Title';
+	}
+	var target = '';
+	var link = url_for(page.path);
+	if (page.link) {
+		target = ' target="_blank" ';
+		link = page.link;
+	}
+%>
+					<h2 class="box-content-title">
+						<a href="<%- link %>" <%- target %> itemprop="url"><span class="content-title" itemprop="name"><%= title %></span></a>
+					</h2>
+
+					<div class="content post-item-content" itemprop="articleBody">
+
+<%- page.content %>
+					</div>
+
+<%
+	if (page.tags && page.tags.length) {
+%>
+					<div class="content-tag">
+
+<%-
+	list_tags(page.tags, {
+		show_count: false,
+		style: 'none',
+		separator: ', '
+	})
+%>
+
+					</div>
+<%
+	}
+%>
+
+
+				</article>
+			</div>
+
+		</div>
+
+		<div class="panel-post-nav">
+			<div class="box-post-nav">
+<%- partial('_widget/post-nav') %>
+			</div>
+		</div>
+		<div class="content-comments">
+		<% if (config.duoshuo_shortname){ %>
+  <section id="comments">
+    <!-- 多说评论框 start -->
+    <div class="ds-thread" data-thread-key="<%= path %>" data-title="<%= title %>" data-url="<%- link %>"></div>
+    <!-- 多说评论框 end -->
+    <!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+    <script type="text/javascript">
+    var duoshuoQuery = {short_name:'<%= config.duoshuo_shortname %>'};
+      (function() {
+        var ds = document.createElement('script');
+        ds.type = 'text/javascript';ds.async = true;
+        ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+        ds.charset = 'UTF-8';
+        (document.getElementsByTagName('head')[0] 
+         || document.getElementsByTagName('body')[0]).appendChild(ds);
+      })();
+      </script>
+    <!-- 多说公共JS代码 end -->
+  </section>
+  <% } %>
+		</div>
+		

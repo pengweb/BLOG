@@ -1,0 +1,20 @@
+
+style: asset/css/style.css
+logo: asset/img/logo.png
+image_src: asset/img/logo.png
+favicon: asset/img/favicon.png
+
+menu:
+	HOME: /
+  Javascript: /tags/js
+  Node.js: /tags/nodejs
+  Html: /tags/html
+  Css: /tags/css
+  Note: /tags/note
+  Others: /tags/others
+	Sitemap: archives
+	
+
+#google_analytics: test
+
+rss: atom.xml
