@@ -1,7 +1,7 @@
 ---
 title: HTML---笔记
 date: 2016-03-20 14:13:20
-tags: [html,笔记]
+tags: [html,笔记,note]
 
 ---
 # 1.HTML5新特性

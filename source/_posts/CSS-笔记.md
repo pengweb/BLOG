@@ -1,7 +1,7 @@
 ---
 title: CSS---笔记
 date: 2016-03-20 14:13:06
-tags: [css,笔记]
+tags: [css,笔记,note]
 
 ---
 # 1.注释

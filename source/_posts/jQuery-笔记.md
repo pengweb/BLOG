@@ -1,7 +1,7 @@
 ---
-title: "'jQuery---笔记'"
+title: "jQuery---笔记"
 date: 2016-03-17 22:30:13
-tags: [Javascript,jquery，笔记]
+tags: [Javascript,jquery，笔记,note,js]
 
 ---
 # 1.选择器
@@ -619,4 +619,144 @@ var object = $.extend({}, object1, object2);
 ```
 4.加上参数true的话，就是深拷贝（递归合并）---同样也是复制到target对象内
 *注：这种合并的话，如果相同方法内有相同的属性，后边的属性会覆盖掉前边的属性*
-### 10.8 
+### 10.8 回到顶部
+``` js
+$('.top').click(function (e) {
+  e.preventDefault();
+  $('html, body').animate({scrollTop: 0}, 800);
+});
+```
+### 10.9 图片预加载
+``` js
+for (var i = 0; i < arguments.length; i++) {
+$('<img>').attr('src', arguments[i]);
+}
+$.preloadImages('img/hover-on.png', 'img/hover-off.png');
+```
+### 10.10 检查图片是否加载完毕
+``` js
+$('img').load(function(){
+    console.log('图片全部加载完成')
+})
+```
+### 10.11 自动修复损坏的图片
+``` js
+$('img').on('error', function () {
+  $(this).prop('src', 'img/broken.png');
+});
+```
+### 10.12 禁用input字段
+``` js
+$('input[type="submit"]').prop('disabled', true);
+//当你想把 disabled 的值改为 false 时，仅需在该 input 上再运行一次 prop 方法。
+$('input[type="submit"]').prop('disabled', false);
+//或者
+$('input[type="submit"]').removeAttr('disabled');
+```
+### 10.13 停止链接跳转--就是阻止默认事件
+``` js
+$('a.no-link').click(function (e) {
+  e.preventDefault();
+});
+```
+### 10.14 所有列相同高度
+``` js
+var $rows = $('.same-height-columns');
+$rows.each(function () {
+  $(this).find('.column').height($(this).height());
+});
+//方法二
+$(document).ready(function() {
+function equalHeight(group) {
+    tallest = 0;
+    group.each(function() {
+        thisHeight = $(this).height();
+        if(thisHeight > tallest) {
+            tallest = thisHeight;
+        }
+    });
+    group.height(tallest);
+}
+// how to use
+$(document).ready(function() {
+    equalHeight($(".left"));
+    equalHeight($(".right"));
+});
+});
+```
+### 10.15 新标签页打开链接
+``` js
+$('a[href^="http"]').attr('target', '_blank');
+$('a[href^="//"]').attr('target', '_blank');
+$('a[href^="' + window.location.origin + '"]').attr('target', '_self');
+```
+### 10.16 通过文本内容找到元素
+``` js
+var search = $('#search').val();
+$('div:not(:contains("' + search + '"))').hide();
+```
+### 10.17 焦点在标签页上切换触发事件，H5新API
+``` js
+$(document).on('visibilitychange', function (e) {
+  if (e.target.visibilityState === "visible") {
+    console.log('Tab is now in view!');
+  } else if (e.target.visibilityState === "hidden") {
+    console.log('Tab is now hidden!');
+  }
+});
+```
+### 10.18 Delegate()函数有什么作用？
+``` js
+//如果你有一个父元素，需要给其下的子元素添加事件，这时你可以使用delegate()了，代码如下：
+$("ul").delegate("li", "click", function(){
+    $(this).hide();
+});
+//当元素在当前页面中不可用时，可以使用delegate()
+```
+### 10.19 怎样用jQuery编码和解码URL？
+encodeURIComponent(url) and decodeURIComponent(url)
+### 10.20 禁止右键点击
+``` js
+$(document).ready(function(){
+    $(document).bind("contextmenu",function(e){
+        return false;
+    });
+});
+```
+### 10.21 移除单词
+``` js
+$(document).ready(function() {
+   var el = $('#id');
+   el.html(el.html().replace(/word/ig, ""));
+});
+```
+### 10.22 验证是否在jquery对象集合中
+``` js
+$(document).ready(function() {
+   if ($('#id').length) {
+  // do something
+  }
+});
+```
+### 10.23 克隆对象
+``` js
+$(document).ready(function() {
+   var cloned = $('#id').clone();
+// how to use
+<DIV id=id></DIV>
+
+});
+```
+### 10.24 统计元素个数
+``` js
+$(document).ready(function() {
+   $("p").size();
+});
+```
+### 10.25 禁用jquery（动画）效果
+``` js
+$(document).ready(function() {
+    jQuery.fx.off = true;
+});
+```
+

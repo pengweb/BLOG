@@ -1,7 +1,7 @@
 ---
 title: HTTP/TCP协议---笔记
 date: 2016-03-20 14:12:51
-tags: [others,http,tcp,笔记]
+tags: [others,http,tcp,笔记,note]
 
 ---
 # 1.TCP HTTP UDP三者的关系

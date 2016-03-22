@@ -160,3 +160,9 @@ layout: default
     </body>
 </html>
 ```
+# 15. 将内容更目录设置为source
+```
+//设置config.yml
+post_asset_folder: true
+//这样在source内创建一个images存储图片，引用的地址就可以直接写成/images/11.jpg了
+```

@@ -1,7 +1,7 @@
 ---
 title: javascript高性能---笔记
 date: 2016-03-20 14:12:05
-tags: [javascript,笔记]
+tags: [javascript,笔记,note,js]
 
 ---
 
