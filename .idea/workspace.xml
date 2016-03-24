@@ -33,8 +33,8 @@
           </provider>
           <provider selected="true" editor-type-id="split-provider[text-editor;MultiMarkdownPreviewEditor]">
             <state split_layout="FIRST">
-              <first_editor relative-caret-position="506">
-                <caret line="101" column="0" selection-start-line="101" selection-start-column="0" selection-end-line="101" selection-end-column="0" />
+              <first_editor relative-caret-position="455">
+                <caret line="292" column="0" selection-start-line="292" selection-start-column="0" selection-end-line="292" selection-end-column="0" />
                 <folding />
               </first_editor>
               <second_editor />
@@ -146,7 +146,7 @@
     </panes>
   </component>
   <component name="PropertiesComponent">
-    <property name="last_opened_file_path" value="D:/YNET/Scorecard" />
+    <property name="last_opened_file_path" value="D:/GITHUB/Project-zhp" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="HbShouldOpenHtmlAsHb" value="" />
     <property name="SearchEverywhereHistoryKey" value="pre&#9;null&#9;null&#10;.layout-menu&#9;null&#9;null&#10;highlight&#9;null&#9;null&#10;.box-archive-list&#9;null&#9;null" />
@@ -249,7 +249,7 @@
       <workItem from="1458569211253" duration="7015000" />
       <workItem from="1458610449847" duration="11929000" />
       <workItem from="1458742017228" duration="3692000" />
-      <workItem from="1458783369622" duration="7427000" />
+      <workItem from="1458783369622" duration="23710000" />
     </task>
     <task id="LOCAL-00001" summary="add">
       <created>1458615607332</created>
@@ -269,11 +269,11 @@
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="86825000" />
+    <option name="totallyTimeSpent" value="103108000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="676" y="0" width="697" height="735" extended-state="0" />
-    <editor active="true" />
+    <editor active="false" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.41997063" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
@@ -870,8 +870,8 @@
       </provider>
       <provider selected="true" editor-type-id="split-provider[text-editor;MultiMarkdownPreviewEditor]">
         <state split_layout="FIRST">
-          <first_editor relative-caret-position="506">
-            <caret line="101" column="0" selection-start-line="101" selection-start-column="0" selection-end-line="101" selection-end-column="0" />
+          <first_editor relative-caret-position="455">
+            <caret line="292" column="0" selection-start-line="292" selection-start-column="0" selection-end-line="292" selection-end-column="0" />
             <folding />
           </first_editor>
           <second_editor />

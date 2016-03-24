@@ -42,8 +42,8 @@ ES3中不确定的行为将得到处理，对某些不安全的操作会抛出�
 ## 3.2 关键字
 具有特殊用途的关键字：var、new 等等
 ## 3.4 数据类型
-基本数据类型：Undefined、Null、Boolean、Number、String
-引用数据类型：Object
+基本数据类型：`Undefined`、`Null`、`Boolean`、`Number`、`String`
+引用数据类型：`Object`
 ### 3.4.2 Undefined类型
 只声明，并未初始化的值
 var声明，但不赋值（不初始化）
@@ -54,9 +54,11 @@ undefined**派生**自null，所以 null == undefined   //true
 ### 3.4.4 Boolean类型
 区分大小写
 true不一定等于1，false也不一定等于0
-Boolean()  可以转化Boolean值
-转化为false的值有：
+`Boolean()`  可以转化Boolean值
+**转化为false的值有：**
 false、""、0或NAN、null、undefined
+**转换为true的值有：**
+任何非空字符串、任何非零数字值(包括无穷大)、任何对象、n/a-意思是不适用
 ### 3.4.5 Number类型
 浮点值也叫双精度数值
 八进制第一位必须是0，如果字面值中的数值超出范围，那么前导零将被忽略，后面数值将被当作十进制数值进行解析
@@ -76,13 +78,13 @@ ES会将小数点后面至少6位的数值转化为e表示法
 浮点值最高精度为17位小数，虽然到了17位但精度却远远不如证书。
 0.1+0.2 = 0.30000000000000004   //判断测试将不通过，所以永远不要测试某个特定的浮点数值
 #### 3.4.5.2 数值范围
-最小数值保存在Number.MIN_VALUE中，为5e-324
-最大数值保存在Number.MAX_VALUE中，为1.7976931348623157e+308
-如果超出这个值用Infinity表示，负数用-Infinity表示
+最小数值保存在Number.MIN_VALUE中，为`5e-324`
+最大数值保存在Number.MAX_VALUE中，为`1.7976931348623157e+308`
+如果超出这个值用`Infinity`表示，负数用-Infinity表示
 #### 3.4.5.3 NaN
 特殊数值，表示要返回数值的操作数未返回数值的情况
 1.任何数值除以**非数值**会返回NaN
-2.**NaN与任何值都不想等，包括自身**
+2.**NaN与任何值都不相等，包括自身**
 isNaN(),尝试将这个值**转化为数值**，确定这个参数是否"不是数值"。不能转化的为true
 ``` js
 isNaN("blue")   //true
@@ -92,12 +94,204 @@ isNaN("10")     //false
 3.当判断对象的时候，先执行valueOf()，再执行toString(),再测试返回值。
 #### 3.4.5.4 数值转化
 非数值转化数值方法：
-Number()    //将**任何类型**转化为数值
-parseInt()  //将**字符串**转化为数值
-parseFloat()//将**字符串**转化为数值
+`Number()`    //将**任何类型**转化为数值  *+的操作符操作与它相同*
+`parseInt()`  //将**字符串**转化为数值--**整数**忽略小数点后
+`parseFloat()`//将**字符串**转化为数值--**浮点数**忽略第二个小数点后
 
 Number():
 Number(null) //0
 Number(undefined) //NaN
+Number('hello world')  //NaN
+Number('')    //0
+Number('0011')  //11
+Number('1.1')  //1.1
+Number(true)    //1
+
+parseInt()   //0  字符串为空的时候为0
+1.忽略前导零
+2.自动转化为十进制
+3.如果是对象，先调用`valueoOf()`,如果为NaN则调用`toString()`,然后再转化返回的字符串
+4.转化为整数，忽略小数点以后的数字，因小数点以后不是有效的数字字符
+5.可以识别十六进制和八进制，首位0x为十六进制，0数字为八进制
+
+parseInt('')   //NaN
+parseInt(22.5)  //22
+parseInt('0xA')  //10   十六进制
+parseInt('070')  //56  ES3-八进制 
+parseInt('070')  //70  ES5-十进制-忽略前导零
+因为上边这种情况，所以引入第二个参数
+parseInt('070',10)   //这样就可以确定是几进制了
+
+parseFloat()
+1.忽略第二个小数点后的值
+2.忽略前导零
+3.只解析十进制--十六进制被转化为0
+
+parseFloat(0xA);   //0
+parseFloat(22.3.4);  //22.3
+parseFloat(07);   //7
+parseFloat(3.1e2);   //310
+
+### 3.4.6 String类型
+""和''效果是一模一样的
+转义序列  \n表示换行----P33
+length可以返回字符的数目，如果字符串中包含双字节字符，length可能不会精确的返回字符串中的字符数目
+字符串一经创建就不能改变，要改变某个变量保存的字符串，首先要销毁，再扩充该变量
+```js
+var lang = 'hel';
+var lang = lang + 'low';   //前边的lang会被销毁
+```
+老浏览器--先扩充一个6字节的内存，然后分别存入hel和low，然后销毁之前这两个值（慢的原因）
+新浏览器--直接在lang内进行扩充3个字节
+
+#### 3.4.6.3 转换为字符串
+`toString()`    
+每个字符串都有这个方法，但是**null和undefined没有这个方法**
+toString(8)     //**参数**以八进制输出
+例：num.toString(8)
+
+`String()`   //不知道是否是null和undefined的时候可以用这个方法
+1.如果值有toString方法，则调用toString
+2.如果值为null，则返回"null"
+3.如果职位undefined，则返回"underfined"
+例：String(num)
+
+### 3.4.7 Object类型
+var o = new Object();  //创建一个新对象
+**如果不传参数可以不要Object后边的(),但不推荐**
+每个实例都有下列属性的方法
+`constructor`：保存用于创建当前对象的函数，就是new Object中的Object
+` hasOwnProperty(propertyName)`:检查属性在当前实例中，而不再原型中
+o.hasOwnProperty("name")   //name是o实例对象上的属性
+`isPrototypeOf(object)`:检查是否为对象的原型
+`propertyIsEnumerable(propertyName)`: 检查给定的属性是否能够使用for-in语句来枚举，参数以字符串形式指定。
+`toLocaleString()`:返回对象的字符串表示，该字符串与执行环境的地区对应。
+`toString`：返回对象的字符串形式
+`valueOf()`: 返回对象的字符串、数值或布尔值表示，通常与toString返回值**相同**
+
+## 3.5 操作符
+操作符通常会调用对象的valueOf()和(或)toString()方法，以便取得可以操作的值。
+### 3.5.1 一元操作符
+只能操作一个值得操作符叫一元操作符。
+#### 3.5.1.1 递增和递减
+++  --   分为前置和后置
+不仅适用于整数，还可以用于字符串、布尔值、浮点数值和对象
+1.包含有效数字字符的字符串时，**先将其转换为数字值**，再执行加减1的操作
+2.不包含有效数字字符的字符串，将变量值设为**NaN**
+3.布尔值会转化为0/1然后再进行++--操作
+4.浮点值可以++--操作
+5.对象先调用valueOf(),如果结果为NaN，则调用toString();
+#### 3.5.1.2 一元+和-操作符
+非数值型的一元操作符会想Number()转换函数一样对这个值执行转换。
+var s = +'hello'  //NaN    翻看Number()
+### 3.5.2 位操作符
+ES中所有数值都以IEEE-754B64位格式存储，但位操作符并不直接操作64位的值。而是先将64位的值转换为32位的整数，然后执行操作，最后再将结果转换回64位。
+有符号的整数，32位中前31位用于表示整数的值。第32位用于表示数值的符号。**0表示正，1表示负**
+*更新中···*
+### 3.5.3 布尔操作符
+与(AND)或(OR)非(NOT)
+#### 3.5.3.1 逻辑非 `!` 
+先将操作数转换为布尔值，然后再取反--*参照Boolean*
+1.如果操作数是一个对象，返回false
+2.如果操作数是一个空字符串，返回true
+3.如果操作数是一个非空字符串，返回false
+4.如果操作数是数值0，返回true
+5.如果操作数是任意非0的值（包括Infinity）,返回false
+6.如果操作数是null/NaN/undefined，返回true
+*使用两个!!就相当于Boolean()*
+#### 3.5.3.2 逻辑与 `&&`
+当有一个操作数不是布尔值的时候
+短路操作，第一个为false就不往下进行了
+1.第一个操作数是对象，返回第二个操作数
+2.第二个操作数是对象，只有在第一个值为true的时候，才返回这个对象
+3.两个操作数都是对象，返回第二个操作数
+4.如果有一个操作数是null/NaN/undefined，则返回null/NaN/undefined
+**两个都为false时也执行**
+按正常理解就行
+
+#### 3.5.3.3 逻辑或 `||`
+也是短路操作，第一个为true的话，就不往下进行了
+1.第一个操作数是对象，则返回第一个操作数
+2.第一个操作数的求值结果为false，则返回第二个操作数
+3.如果两个操作数都是对象，则返回第一个操作数
+4.两个操作数都是null/NaN/undefined则返回null/NaN/undefined
+
+### 3.5.4 乘法操作符
+乘法、除法、求模
+非数值的情况下会执行自动类型转换`Number()`转换
+#### 3.5.4.1 乘法
+1.一个操作数为NaN，结果为NaN
+2.Infinity与0相乘，结果NaN
+3.Infinity与非0相乘，结果为Infinity
+4.Infinity和Infinity相乘结果是Infinity
+
+#### 3.5.4.2 除法
+1.零被零除，结果是NaN
+2.非零的有限数被0除，结果是Infinity
+3.Infinity和Infinity相除结果是NaN
+
+#### 3.5.4.3 求模（余数%）
+1.被除数为0的时候，结果为0
+
+### 3.5.5 加性操作符
+#### 3.5.5.1 加法 
+1.如果一个操作符是NaN,结果是NaN
+2.Infinity加-Infinity，结果为NaN
+3.如果有一个是字符串，则**执行字符串拼接操作**
+
+#### 3.5.5.2 减法
+1.如果有一个为NaN,则结果为NaN
+2.Infinity减Infinity，结果为NaN
+3.-Infinity减-Infinity，结果为NaN
+4.Infinity减-Infinity，结果为Infinity
+5.-Infinity减Infinity，结果为-Infinity
+
+### 3.5.6 关系操作符
+< > <= >=  //返回布尔值
+1.两个都是字符串的话，比较**字符编码值**
+2.布尔值将其转化为数值后，再比较
+
+### 3.5.7 相等操作符
+== 和 !=     //先**转换**为相似的类型再比较
+1.如果一个操作符为NaN,相等操作符返回false，不相等操作符返回true
+2.如果两个操作符为NaN,相等操作符返回false，不相等操作符返回true
+null == undefined  //true
+
+=== 和!==    //仅比较
+'55' === 55  //false
+
+### 3.5.8 条件操作符-三元运算符
+variable = boolean_expression ? true_value : false_value
+判断boolean_expression，正确执行true_value，错误执行false_value
+
+### 3.5.9 赋值操作符
+=   //赋值
+复合赋值
+*=
++=
+%=
+<<=    //左移赋值
+=>>    //右移赋值
+
+### 3.5.10 逗号操作符
+在一个语句中执行多个操作
+var num1 = 1,num2 =2,num3 = 3;
+赋值时候，只返回**最后一个**表达式
+var num = (5,1,4,8)   //num的值为8
+
+## 3.6 语句
+### 3.6.5
+使用for-in循环之前，先**检查**确认该对象的值**不是null或undefined**
+**判断undefined** 用typeof(x) == "undefined"
+**判断null**   用 x == null
+
+### 3.6.7 break和continue语句
+break 立即跳出循环，强制继续执行循环后面的语句
+continue 立即跳出循环，从循环顶部继续执行
+
+### 3.6.9 switch语句
+
+
+ 
 
 
