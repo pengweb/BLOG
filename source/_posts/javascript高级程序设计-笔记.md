@@ -948,6 +948,10 @@ Math.floor(25.9)  //25
 ```
 # 6.面向对象的程序设计
 ES把对象定义为：**无序属性集合**。
+本章总结：
+**创建对象:工厂模式/组合模式（构造函数+原型模式）**
+**继承方法：原型链/组合继承（原型链+借用构造函数）/原型式/寄生组合式（原型链+借用构造函数+原型式+寄生式）**
+**补充：new是创建了一个副本。组合和寄生组合都是借用了覆盖的原理**
 ## 6.1 理解对象
 键值对形式存在
 ### 6.1.1 属性类型
@@ -1108,7 +1112,7 @@ var person2 = createPerson("Greg", 27, "Doctor");
 person1.sayName();   //"Nicholas"
 person2.sayName();   //"Greg"
 ```
->工厂模式虽然解决了创建多个相似对象的问题，但却没有解决对象识别的问题（即怎么知道一个对象的类型）。
+**工厂模式虽然解决了创建多个相似对象的问题，但却没有解决对象识别的问题（即怎么知道一个对象的类型）。**
 
 ### 6.2.2 构造函数模式
 ```js
@@ -1524,7 +1528,7 @@ alert(instance.age);     //29
             
 function SuperType(name){                     //构造函数-创建对象
     this.name = name;
-    this.colors = ["red", "blue", "green"];
+    this.colors = ["red", "blue", "green"];                    
 }
 
 SuperType.prototype.sayName = function(){    //原型模式-创建对象
@@ -1532,7 +1536,7 @@ SuperType.prototype.sayName = function(){    //原型模式-创建对象
 };
 
 function SubType(name, age){  
-    SuperType.call(this, name);              //借用构造函数-继承       第二次调用SuperType()，创建实例
+    SuperType.call(this, name);              //借用构造函数-继承       第二次调用SuperType()，创建实例   这一步进行了覆盖原型操作
     
     this.age = age;
 }
@@ -1545,7 +1549,7 @@ SubType.prototype.sayAge = function(){
 
 var instance1 = new SubType("Nicholas", 29);
 instance1.colors.push("black");
-alert(instance1.colors);  //"red,blue,green,black"
+alert(instance1.colors);  //"red,blue,green,black"       
 instance1.sayName();      //"Nicholas";
 instance1.sayAge();       //29
 
@@ -1729,3 +1733,340 @@ var Doctor = deepCopy(Chinese);
 
 # 7.函数表达式
 函数声明和函数表达式
+函数声明**提升**
+** 本章重点：私有变量/模块模式**
+
+## 7.1 递归
+```js
+function factorial(num){
+    if (num <= 1){
+        return 1;
+    } else {
+        return num * factorial(num-1);
+    }
+}
+
+var anotherFactorial = factorial;           //指针指向factorial
+factorial = null;                          //指针被指向了null
+alert(anotherFactorial(4));  //error!
+```
+`arguments.callee`指向**正在执行**的函数的指针。
+上个代码解决方法
+```js
+ function factorial(num){
+    if (num <= 1){
+        return 1;
+    } else {
+        return num * arguments.callee(num-1);    //★ argument.callee总比使用函数名更保险
+    }
+}
+
+var anotherFactorial = factorial;     //★ 赋值其实就是创建了一个副本
+factorial = null;
+alert(anotherFactorial(4));  //24    因为上边是副本，所以anotherFactorial = factorial还是存在的。但是修改anotherFactorial属性会反映到facotrial
+```
+严格模式下，通过脚本访问`arguments.callee`会导致错误。
+不过可以通过使用命名函数表达式来达成相同结果
+```js
+var factorial = (function f(num){
+    if(num<=1){
+        return 1；
+    }else{
+        return num*f(num-1);
+    }
+})
+```
+f()为**命名函数表达式**
+
+## 7.2 闭包
+闭包是指有权访问另一个函数作用域的变量的函数。
+最终作用域链内部\[\[Scope]]属性中
+作用域链本质上是一个指向变量对象的指针列表，只引用但不实际包含变量对象。
+外层函数在执行完毕后，不会被销毁，因为作用域链仍然在引用内部函数，直到内部匿名函数被销毁后，外层函数才会被销毁（表达严重问题）
+通过compareNames = null 来接触对匿名函数的引用，以便释放内存。
+
+### 7.2.1 闭包与变量
+作用域链副作用：闭包只能取得包含函数中任何变量的**最后一个**值（for循环的时候总是最大值）。
+解决上述问题：创建另一个匿名函数强制让闭包的行为符合预期
+```js
+function createFunctions(){
+    var result = new Array();
+    
+    for (var i=0; i < 10; i++){
+        result[i] = (function(num){
+            return function(){      //★★★★★匿名函数形成闭包，访问的是外层函数传过来的i，这个i每次传进来都是最后一个值
+                return num;
+            };
+        })(i);          //给自执行函数传入值
+    }
+    
+    return result;
+}
+
+var funcs = createFunctions();
+
+//every function outputs 10
+for (var i=0; i < funcs.length; i++){
+    document.write(funcs[i]() + "<br />");
+}
+```
+### 7.2.2 关于this对象
+this被某个对象调用的时候，就指向那个对象
+把外部作用域中的this对象保存在一个闭包能够访问到的变量（that）里，就可以让闭包访问该对象了。
+**this**和**arguments**存在相同的问题，解决办法也是相同的
+```js
+var name = "The Window";
+            
+var object = {
+    name : "My Object",
+
+    getNameFunc : function(){
+        var that = this;             //如果这里不把this传给that，那么下边的return this.name中的this就是指向的window，结果将是The Window
+        return function(){
+            return that.name;
+        };
+    }
+};
+
+alert(object.getNameFunc()());  //"MyObject"
+```
+this值可能意外转变
+```js
+var name = "The Window";
+            
+var object = {
+    name : "My Object",
+
+    getName: function(){
+        return this.name;
+    }
+};
+
+alert(object.getName());     //"My Object"
+alert((object.getName)());   //"My Object"
+alert((object.getName = object.getName)());   //"The Window" in non-strict mode    因为被重新赋值了
+```
+
+### 7.2.3 内存泄漏
+闭包内循环引用导致内存泄漏
+解决办法：使循环引用的元素在运行完后设置为`null`
+
+## 7.3 模仿块级作用域
+下边这个例子可以看出for循环是没有作用域的
+```js
+function outputNumbers(count){
+    for (var i=0; i < count; i++){
+        alert(i);                       //0,1,2,3,4
+    }
+//因为没有作用域，所以下边可以取到for中的i
+    alert(i);   //count                //5
+}
+
+outputNumbers(5);
+```
+下边说明光声明也是没有作用的
+```js
+function outputNumbers(count){
+    for (var i=0; i < count; i++){
+        alert(i);                //0,1,2,3,4
+    }
+
+    var i;    //variable re-declared   这里只是声明的话，不影响结果，赋值的话，会影响下边取到的值
+    alert(i);   //count          //5
+}
+
+outputNumbers(5);
+```
+将函数声明包含在一对**圆括号中**，表示它实际上是一个**函数表达式**。
+函数声明的后边不能加(),但是函数表达式后边加(),表示立即调用。
+如果**临时**需要一些**变量**，就可以使用私有作用域。
+```js
+function outputNumbers(count){
+            
+    (function () {                               //创建私有作用域
+        for (var i=0; i < count; i++){
+            alert(i);
+        }
+    })();
+    
+    alert(i);   //causes an error
+}
+
+outputNumbers(5);
+```
+在匿名函数中定义的任何变量，都会在执行结束时被销毁，所以上述例子error，这是一种不污染全局变量的很好的办法。
+** 这种做法可以减少闭包占用的内存问题，因为没有指向匿名函数的引用。**
+** 只要函数执行完毕，就可以立即销毁其作用域链了。**
+
+## 7.4 私有变量
+js没有私有成员改变，但是有私有变量的概念。
+任何在**函数中**定义的变量（参数，局部变量和其他内部定义的其他函数），都可以认为是私有变量。
+
+我们把有权访问私有变量和私有函数的公有方法成为**特权方法**。
+有两种创建特权方法的方式：
+1.构造函数中定义特权方法
+```js
+function MyObject(){
+    //私有变量和私有函数
+    var privateVariable = 10;
+    function privateFunction(){
+        return false;
+    }
+    
+    //特权方法   重点就是this
+    this.publicMethod = function(){
+        privateVariable++;
+        return privateFunction();
+    }
+}
+```
+** 利用私有和特权成员，可以隐藏那些不应该被直接修改的数据**
+2.构造函数传递参数
+```js
+function Person(name){     
+    this.getName = function(){
+        return name;
+    };
+    this.setName = function (value) {
+        name = value;
+    };
+}
+var person = new Person("Nicholas");
+alert(person.getName());   //"Nicholas"
+person.setName("Greg");
+alert(person.getName());   //"Greg"
+```
+缺点：同构造函数，每个实例都要创建一个新方法
+静态私有变量解决这个问题
+
+### 7.4.1 静态私有变量--不推荐
+利用私有作用于中定义私有变量或函数，同样可以创建特权方法。
+注意：
+1.不使用函数声明，因为函数声明只能创建局部函数
+2.不适用var关键字，也是因为只能创建局部的，如果没有var 就是全局的，私有作用域外也可以访问到
+*注意：严格模式下未经声明的变量赋值会导致错误*
+```js
+(function(){
+            
+    var name = "";
+    
+    Person = function(value){                //没有var是全局的
+        name = value;                
+    };
+    
+    Person.prototype.getName = function(){
+        return name;
+    };
+    
+    Person.prototype.setName = function (value){
+        name = value;
+    };
+})();
+
+var person1 = new Person("Nicholas");
+alert(person1.getName());   //"Nicholas"
+person1.setName("Greg");
+alert(person1.getName());   //"Greg"
+                   
+var person2 = new Person("Michael");
+alert(person1.getName());   //"Michael"    //原型链上name被改变
+alert(person2.getName());   //"Michael"
+```
+特权方法是在**原型**上定义的，因此所有实例都使用同一个函数，避免了重复创建。
+而特权方法，作为一个闭包，**总是保存着对包含作用域的引用**
+缺点：每个实例都没有自己的私有变量，而且不带var的写法，总是让人很担心，我觉得这个方法很糟糕！！
+
+### 7.4.2 模块模式--★★★★★经常使用
+js是以对象字面量方式来创建单例对象的。
+主要是通过**将一个对象字面量作为函数的值返回**，返回的对象字面量中只包含可以公开的属性和方法。
+**这种模式在需要对单例进行某些初始化，同时又需要维护其私有变量时是非常有用的。**
+```js
+function BaseComponent(){
+}
+function OtherComponent(){
+}
+var application = function(){
+    //private variables and functions
+    var components = new Array();
+    //initialization
+    components.push(new BaseComponent());
+    //public interface
+    return {                            //return  这个要返回到外部
+        getComponentCount : function(){
+            return components.length;
+        },
+        registerComponent : function(component){
+            if (typeof component == "object"){
+                components.push(component);
+            }
+        }
+    };
+}();                                    //★这个()很重要
+application.registerComponent(new OtherComponent());
+alert(application.getComponentCount());  //2
+```
+**单例通常都是作为全局对象存在的**
+
+### 7.4.3  增强的模块模式
+这种增强模式适合那些单例必须是某种类型的实例
+**区别就是在模块内部又创建了一个对象**
+```js
+function BaseComponent(){
+}
+
+function OtherComponent(){
+}
+
+var application = function(){
+
+    //private variables and functions
+    var components = new Array();
+
+    //initialization
+    components.push(new BaseComponent());
+
+    //create a local copy of application
+    var app = new BaseComponent();            //★唯一的区别
+
+    //public interface
+    app.getComponentCount = function(){
+        return components.length;
+    };
+
+    app.registerComponent = function(component){
+        if (typeof component == "object"){
+            components.push(component);
+        }
+    };
+
+    //return it
+    return app;
+}();
+
+alert(application instanceof BaseComponent);
+application.registerComponent(new OtherComponent());
+alert(application.getComponentCount());  //2
+```
+
+# 10.DOM
+### 10.1.1 Node类型
+Javascript中所有节点类型都继承自Node类型，因为**所有节点**都共享着相同的基本属性和方法。
+每个节点都有一个`nodeType`属性，用于表明节点类型
+Node.ELEMENT_NODE(1);                 //元素节点
+Node.ATTRIBUTE_NODE(2);               //属性节点
+Node.TEXT_NODE(3);                    //文本节点
+Node.CDATA_SECTION_NODE(4);
+Node.ENTITY_REFERENCE_NODE(5);
+Node.ENTITY_NODE(6);
+Node.PROCESSING_INSTRUCTION_NODE(7);
+Node.COMMENT_NODE(8);
+Node.DOCUMENT_NODE(9);                  //文档节点
+Node.DOCUMENT_TYPE_NODE(10);
+Node.DOCUMENT_FRAGMENT_NODE(11);
+Node.NOTATION_NODE(12);
+
+#### 10.1.1.1 了解节点具体信息：
+`nodeName`
+`nodeValue`
+
+#### 10.1.1.2 节点关系
