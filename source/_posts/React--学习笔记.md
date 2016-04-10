@@ -6,21 +6,19 @@ tags: [js,笔记,note,javascript,react]
 ---
 
 # 1.准备
-Babel   将es6转化成es5的工具（服务器端）
-browser   将es6转化成es5的工具（浏览器端）
-
+Babel   将es6转化成es5和解析JSX的工具（服务器端）
+browser   将es6转化成es5和解析JSX的工具（浏览器端）
 
 # 2.组件
 
 ```js
-var helloMessage = React.creatclass({render:function(){return }})
+var helloMessage = React.creatClass({render:function(){return ···}})
 ```
 
-组件类的第一个字母必须大写，否则会报错，应改为**HelloMessage**
+组件类的第一个字母**必须大写**，否则会报错，应改为**HelloMessage**
 ```js
-var helloMessage = React.creatclass({render:function(){return <h1></h1><p></p>}})
+var helloMessage = React.creatClass({render:function(){return <h1></h1><p></p>}})
 ```
-
 
 组件类只能包含一个顶层标签，否则也会报错。**h1和p**都是顶层标签了
 **如果一定要含有两层或更多的话，记得用()括起来，return (<h1></h1><p></p>)**
@@ -28,7 +26,6 @@ var helloMessage = React.creatclass({render:function(){return <h1></h1><p></p>}}
 ```js
 <HelloMessage name="John" class="错的" for="错的">
 ```
-
 添加组件的时候class 属性需要写成 **className** ，for 属性需要写成 **htmlFor** ，这是因为 class 和 for 是 JavaScript 的保留字
 
 # 3.this.props.children 
@@ -246,6 +243,29 @@ ReactDOM.render(
 ```
 isMounted只有组件还处于挂载状态下，才有setState从而更新视图的意义
 
+# 10 嵌套组件
+就是将一个组件放到另一个组件的render内
+
+# 11 事件
+如果要注册事件捕获处理程序，应该使用 `Capture` 事件，例如使用 `onClickCapture` 处理点击事件的捕获阶段，而不是 `onClick`。
+剪贴板事件
+onCopy onCut onPaste
+键盘事件
+onKeyDown onKeyPress onKeyUp
+焦点事件
+onFocus onBlur
+表单事件
+onChange onInput onSubmit
+鼠标事件
+onClick onContextMenu onDoubleClick onDrag onDragEnd onDragEnter onDragExit
+onDragLeave onDragOver onDragStart onDrop onMouseDown onMouseEnter onMouseLeave
+onMouseMove onMouseOut onMouseOver onMouseUp
+触控事件
+onTouchCancel onTouchEnd onTouchMove onTouchStart
+用户界面事件
+onScroll
+滚轮事件
+onWheel
 
 # 下边是平时遇到的问题
 通过要寻找某个节点

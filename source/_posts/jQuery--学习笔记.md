@@ -759,4 +759,11 @@ $(document).ready(function() {
     jQuery.fx.off = true;
 });
 ```
-
+### 10.26 jquery框架
+```js
+(function(window, undefined) {
+    var jQuery = function() {}
+    // ...
+    window.jQuery = window.$ = jQuery;
+})(window);
+```

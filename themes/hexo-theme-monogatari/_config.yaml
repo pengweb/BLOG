@@ -12,7 +12,7 @@ menu:
   Css: /tags/css
   Note: /tags/note
   Others: /tags/others
-	Sitemap: archives
+#	Sitemap: archives
 	
 
 #google_analytics: test
