@@ -63,6 +63,7 @@ tags: [others,http,tcp,笔记,note]
     6. 浏览器**在Document对象上触发DOMContentLoaded事件**
     7. 此时文档完全解析完成，浏览器可能还在等待如图片等内容加载，等这些**内容完成载入并且所有异步脚本完成载入和执行**，document.readState变为complete,window触发load事件
 23. **显示页面**（HTML解析过程中会逐步显示页面）
+
 # 1.TCP HTTP UDP三者的关系
 都是通信协议，也就是通信时所遵守的规则，只有双方按照这个规则“说话”，对方才能理解或为之服务。
 TCP/IP是个协议组，可分为四个层次：网络接口层、网络层、传输层和应用层。

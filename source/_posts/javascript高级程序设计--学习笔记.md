@@ -7001,30 +7001,32 @@ Cache-Control与Expires的作用一致，都是指明当前资源的有效期，
 ![](/images/0064cTs2jw1eyk0rficdhj308h05lwef.jpg)
 
 
-1.Last-Modified/If-Modified-Since
+1. Last-Modified/If-Modified-Since
 Last-Modified/If-Modified-Since要配合Cache-Control使用。
 
 Last-Modified：标示这个响应资源的最后修改时间。web服务器在响应请求时，告诉浏览器资源的最后修改时间。
 
 If-Modified-Since：当资源过期时（使用Cache-Control标识的max-age），发现资源具有Last-Modified声明，则再次向web服务器请求时带上头 If-Modified-Since，表示请求时间。web服务器收到请求后发现有头If-Modified-Since 则与被请求资源的最后修改时间进行比对。若最后修改时间较新，说明资源又被改动过，则响应整片资源内容（写在响应消息包体内），HTTP 200；若最后修改时间较旧，说明资源无新修改，则响应HTTP 304 (无需包体，节省浏览)，告知浏览器继续使用所保存的cache。
 
-2.Etag/If-None-Match
+2. Etag/If-None-Match
 Etag/If-None-Match也要配合Cache-Control使用。
 
-Etag：web服务器响应请求时，告诉浏览器当前资源在服务器的唯一标识（生成规则由服务器觉得）。Apache中，ETag的值，默认是对文件的索引节（INode），大小（Size）和最后修改时间（MTime）进行Hash后得到的。
+Etag：web服务器响应请求时，告诉浏览器当前资源在服务器的唯一标识（生成规则由服务器觉得）。Apache中，ETag的值，默认是对文件的**索引节（INode），大小（Size）和最后修改时间（MTime）**进行Hash后得到的。
 
 If-None-Match：当资源过期时（使用Cache-Control标识的max-age），发现资源具有Etage声明，则再次向web服务器请求时带上头If-None-Match （Etag的值）。web服务器收到请求后发现有头If-None-Match 则与被请求资源的相应校验串进行比对，决定返回200或304。
 
-3.既生Last-Modified何生Etag？
-你可能会觉得使用Last-Modified已经足以让浏览器知道本地的缓存副本是否足够新，为什么还需要Etag（实体标识）呢？HTTP1.1中Etag的出现主要是为了解决几个Last-Modified比较难解决的问题：
+3. 既生Last-Modified何生Etag？
+你可能会觉得使用Last-Modified已经足以让浏览器知道本地的缓存副本是否足够新，为什么还需要Etag（实体标识）呢？
+HTTP1.1中Etag的出现主要是为了解决几个Last-Modified比较难解决的问题：
 
-Last-Modified标注的最后修改只能精确到秒级，如果某些文件在1秒钟以内，被修改多次的话，它将不能准确标注文件的修改时间
+Last-Modified标注的最后修改只能精确到秒级，如果某些文件在**1秒内，被修改多次**的话，它将不能准确标注文件的修改时间
 
-如果某些文件会被定期生成，当有时内容并没有任何变化，但Last-Modified却改变了，导致文件没法使用缓存
+如果某些文件会被**定期生成**，Last-Modified改变了，但**内容却没有变化**，导致文件没法使用缓存
 
-有可能存在服务器没有准确获取文件修改时间，或者与代理服务器时间不一致等情形
+有可能存在服务器没有准确获取文件修改时间，或者与代理服务器**时间不一致**等情形
 
-Etag是服务器自动生成或者由开发者生成的对应资源在服务器端的唯一标识符，能够更加准确的控制缓存。Last-Modified与ETag是可以一起使用的，服务器会优先验证ETag，一致的情况下，才会继续比对Last-Modified，最后才决定是否返回304。
+Etag是服务器自动生成或者由开发者生成的对应资源在服务器端的唯一标识符，能够更加准确的控制缓存。
+Last-Modified与ETag是可以一起使用的，服务器会**优先验证**ETag，一致的情况下，才会继续比对Last-Modified，最后才决定是否返回304。
 
 用户行为与缓存
 浏览器缓存行为还有用户的行为有关！！！

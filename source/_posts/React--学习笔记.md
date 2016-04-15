@@ -267,6 +267,17 @@ onScroll
 滚轮事件
 onWheel
 
+# 12 React-router
+```js
+// 近似于 <Link to={path} state={null}/>
+history.pushState(null, path);
+// 近似于 <Redirect from={currentPath} to={nextPath}/>
+history.replaceState(null, nextPath);
+```
+参考文献：
+https://segmentfault.com/a/1190000004075348?utm_source=tuicool&utm_medium=referral
+https://github.com/react-guide/react-router-cn
+
 # 下边是平时遇到的问题
 通过要寻找某个节点
 ```js
