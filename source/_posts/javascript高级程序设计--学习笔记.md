@@ -1785,6 +1785,10 @@ f()为**命名函数表达式**
 外层函数在执行完毕后，不会被销毁，因为作用域链仍然在引用内部函数，直到内部匿名函数被销毁后，外层函数才会被销毁（表达严重问题）
 通过compareNames = null 来接触对匿名函数的引用，以便释放内存。
 
+**闭包用途：设计私有的方法和变量--匿名函数自执行、面向对象的对象、封装-创建特权方法、缓存**
+当内部函数被调用的时候就会形成闭包
+[参考链接](http://blog.csdn.net/sunlylorn/article/details/6534610)
+
 ### 7.2.1 闭包与变量
 作用域链副作用：闭包只能取得包含函数中任何变量的**最后一个**值（for循环的时候总是最大值）。
 解决上述问题：创建另一个匿名函数强制让闭包的行为符合预期
@@ -5476,6 +5480,22 @@ EventUtil.addHandler(form, "submit", function(event){
         document.getElementById("richedit").innerHTML;
 });
 ```
+
+# 20 JSON
+## 转换
+1. JSON字符串转换为JSON对象
+```js
+var obj = str.parseJSON(); //由JSON字符串转换为JSON对象
+//或者
+var obj = JSON.parse(str); //由JSON字符串转换为JSON对象
+```
+2. JSON对象转化为JSON字符串
+```js
+var last=obj.toJSONString(); //将JSON对象转化为JSON字符
+//或者
+var last=JSON.stringify(obj); //将JSON对象转化为JSON字符
+```
+
 # 21.Ajax与Comet
 ## 21.1 XMLHttpRequest对象
 创建XHR对象
@@ -6375,7 +6395,9 @@ chunk()方法有三个参数：要处理的项目的数组（待办事宜）+处
 
 ### 22.3.3 函数节流
 基本思想：某些代码不可以在**没有间断**的情况连续重复执行。（导致崩溃）
-做法：第一次调用创建一个定时器，第二次调用该函数时，清除前一次定时器。
+方法一：限制最小执行时间间隔
+方法二：用调用次数做节流，但要考虑最后一次调用需要执行
+方法三：第一次调用创建一个定时器，第二次调用该函数时，清除前一次定时器。
 **setTimeout()中用到的函数的环境总是window**
 ```js
 function throttle(method, scope) {
@@ -7178,6 +7200,7 @@ with会修改作用域链的长度
 #### 24.2.2.1 避免不必要的属性查找
 算法的复杂度是使用O 符号来表示的。最简单、最快捷的算法是常数值即O(1)。
 ![](/images/fuzadu.png)
+![排序算法比较](img/sort-compare.png)
 例如，请看以下代码：
 ```js
 var query = window.location.href.substring(window.location.href.indexOf("?"));

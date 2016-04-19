@@ -767,3 +767,19 @@ $(document).ready(function() {
     window.jQuery = window.$ = jQuery;
 })(window);
 ```
+### 10.27 遇到外部链接自动添加target=”blank”的属性
+```js
+var root = location.protocol + '//' + location.host;
+$('a').not(':contains(root)').click(function(){
+    this.target = "_blank";
+});
+```
+### 10.28 在文本或密码输入时禁止空格键
+```js
+$('input.nospace').keydown(function(e) {
+	if (e.keyCode == 32) {
+		return false;
+	}
+});
+```
+

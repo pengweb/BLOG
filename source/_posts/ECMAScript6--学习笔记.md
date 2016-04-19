@@ -4281,3 +4281,1786 @@ run(g);
 
 ## 16.11 async函数
 async函数与Promise、Generator函数一样，是用来取代回调函数、解决异步操作的一种方法。它本质上是Generator函数的**语法糖**。async函数并不属于ES6，而是被列入了ES7，但是traceur、Babel.js、regenerator等转码器已经支持这个功能，转码后立刻就能使用。
+
+# 17 异步操作和Async函数
+Javascript语言的执行环境是“单线程”的，如果没有异步编程，根本没法用，非卡死不可。
+ES6诞生以前，异步编程的方法，大概有下面四种。
+
+1. 回调函数
+2. 事件监听
+3. 发布/订阅
+4. Promise 对象
+
+## 17.1 基本概念
+### 17.1.1 异步
+所谓"异步"，简单说就是一个任务分成两段，先执行第一段，然后转而执行其他任务，等做好了准备，再回过头执行第二段。
+相应地，连续的执行就叫做同步。由于是连续执行，不能插入其他任务，所以操作系统从硬盘读取文件的这段时间，程序只能干等着。
+
+### 17.1.2 回调函数
+JavaScript语言对异步编程的实现，就是回调函数。所谓回调函数，就是把任务的第二段单独写在一个函数里面，等到重新执行这个任务的时候，就直接调用这个函数。它的英语名字callback，直译过来就是"重新调用"。
+一个有趣的问题是，为什么Node.js约定，回调函数的第一个参数，必须是错误对象err（如果没有错误，该参数就是null）？原因是执行分成两段，在这两段之间抛出的错误，程序无法捕捉，只能当作参数，传入第二段。
+
+### 17.1.3 Promise
+```js
+var readFile = require('fs-readfile-promise');
+
+readFile(fileA)
+.then(function(data){
+  console.log(data.toString());
+})
+.then(function(){
+  return readFile(fileB);
+})
+.then(function(data){
+  console.log(data.toString());
+})
+.catch(function(err) {
+  console.log(err);
+});
+```
+可以看到，Promise 的写法只是回调函数的改进，使用then方法以后，异步任务的两段执行看得更清楚了，除此以外，**并无新意**。
+Promise 的最大问题是**代码冗余**，原来的任务被Promise 包装了一下，不管什么操作，一眼看去都是一堆 then，原来的语义变得很不清楚。
+
+## 17.2 Generator函数
+### 17.2.1 协程
+传统的编程语言，早有异步编程的解决方案（其实是多任务的解决方案）。其中有一种叫做"协程"（coroutine），意思是多个线程互相协作，完成异步任务。
+
+协程有点像函数，又有点像线程。它的运行流程大致如下。
+
+第一步，协程A开始执行。
+第二步，协程A执行到一半，进入暂停，执行权转移到协程B。
+第三步，（一段时间后）协程B交还执行权。
+第四步，协程A恢复执行。
+
+```js
+function *asnycJob() {
+  // ...其他代码
+  var f = yield readFile(fileA);
+  // ...其他代码
+}
+```
+它表示执行到此处，执行权将交给其他协程。也就是说，yield命令是异步两个阶段的分界线。
+
+### 17.2.2 Generator函数的概念
+
+```js
+function* gen(x){
+  var y = yield x + 2;
+  return y;
+}
+
+var g = gen(1);
+g.next() // { value: 3, done: false }
+g.next() // { value: undefined, done: true }
+```
+
+### 17.2.3 Generator函数的数据交换和错误处理
+```js
+function* gen(x){
+  try {
+    var y = yield x + 2;
+  } catch (e){
+    console.log(e);
+  }
+  return y;
+}
+
+var g = gen(1);
+g.next();
+g.throw('出错了');
+// 出错了
+```
+上面代码的最后一行，Generator函数体外，使用指针对象的throw方法抛出的错误，可以被函数体内的try ...catch代码块捕获。这意味着，出错的代码与处理错误的代码，实现了时间和空间上的分离，这对于异步编程无疑是很重要的。
+
+### 17.2.4 异步任务的封装--使用 Generator 函数
+```js
+var fetch = require('node-fetch');
+
+function* gen(){
+  var url = 'https://api.github.com/users/github';
+  var result = yield fetch(url);
+  console.log(result.bio);
+}
+//执行
+var g = gen();
+var result = g.next();
+
+result.value.then(function(data){
+  return data.json();
+}).then(function(data){
+  g.next(data);
+});
+```
+## 17.3 Thunk函数
+### 17.3.1 参数的求值策略
+传名调用
+
+### 17.3.2 Thunk函数的含义
+编译器的"传名调用"实现，往往是将参数放到一个临时函数之中，再将这个临时函数传入函数体。这个临时函数就叫做Thunk函数。
+```js
+function f(m){
+  return m * 2;
+}
+
+f(x + 5);
+
+// 等同于
+
+var thunk = function () {
+  return x + 5;
+};
+
+function f(thunk){
+  return thunk() * 2;
+}
+```
+
+### 17.3.3 JavaScript语言的Thunk函数
+任何函数，只要参数有回调函数，就能写成Thunk函数的形式。下面是一个简单的Thunk函数转换器。
+```js
+var Thunk = function(fn){
+  return function (){
+    var args = Array.prototype.slice.call(arguments);
+    return function (callback){
+      args.push(callback);
+      return fn.apply(this, args);
+    }
+  };
+};
+//使用上面的转换器，生成fs.readFile的Thunk函数。
+var readFileThunk = Thunk(fs.readFile);
+readFileThunk(fileA)(callback);
+```
+
+### 17.3.4 Thunkify模块
+生产环境的转换器，建议使用Thunkify模块。
+
+首先是安装
+```js
+$ npm install thunkify
+```
+使用方式如下
+```js
+var thunkify = require('thunkify');
+var fs = require('fs');
+
+var read = thunkify(fs.readFile);
+read('package.json')(function(err, str){
+  // ...
+});
+```
+
+### 17.3.5 Generator 函数的流程管理
+yield命令用于将程序的执行权移出Generator函数，那么就需要一种方法，将执行权再交还给Generator函数。
+这种方法就是Thunk函数，因为它可以在回调函数里，将执行权交还给Generator函数。
+Thunk函数**其实就是一个执行器**来运行Generator 函数的
+
+### 17.3.6 Thunk函数的自动流程管理
+Thunk函数真正的威力，在于可以**自动执行Generator函数**。下面就是一个基于Thunk函数的Generator执行器。
+```js
+function run(fn) {
+  var gen = fn();
+
+  function next(err, data) {
+    var result = gen.next(data);
+    if (result.done) return;
+    result.value(next);
+  }
+
+  next();
+}
+
+run(gen);
+```
+用法：
+```js
+var gen = function* (){
+  var f1 = yield readFile('fileA');
+  var f2 = yield readFile('fileB');
+  // ...
+  var fn = yield readFile('fileN');
+};
+
+run(gen);
+```
+## 17.4 co模块
+### 17.4.1 基本用法
+co模块用于Generator函数的自动执行。
+有一个Generator函数，用于依次读取两个文件
+```js
+var gen = function* (){
+  var f1 = yield readFile('/etc/fstab');
+  var f2 = yield readFile('/etc/shells');
+  console.log(f1.toString());
+  console.log(f2.toString());
+};
+```
+co模块可以让你**不用**编写Generator函数的执行器。
+```js
+var co = require('co');
+co(gen);
+```
+**co函数返回一个Promise对象，因此可以用then方法添加回调函数。**
+```js
+co(gen).then(function (){
+  console.log('Generator 函数执行完成');
+})
+```
+
+### 17.4.2 co模块的原理
+为什么co可以自动执行Generator函数？
+
+前面说过，Generator就是一个异步操作的容器。它的自动执行需要一种机制，当异步操作有了结果，能够自动交回执行权。
+
+两种方法可以做到这一点。
+
+（1）回调函数。将异步操作包装成Thunk函数，**在回调函数里面交回执行权(执行器)**。
+
+（2）Promise 对象。将异步操作包装成Promise对象，**用then方法交回执行权(then)**。
+
+co模块其实就是将两种自动执行器（Thunk函数和Promise对象），包装成一个模块。使用co的前提条件是，**Generator函数的yield命令后面，只能是Thunk函数或Promise对象**。
+
+### 17.4.3 基于Promise对象的自动执行
+Generator函数手动执行**其实就是用then方法，层层添加回调函数**。
+**then实现的一个自动执行器**。
+```js
+function run(gen){
+  var g = gen();
+
+  function next(data){
+    var result = g.next(data);
+    if (result.done) return result.value;
+    result.value.then(function(data){
+      next(data);
+    });
+  }
+
+  next();
+}
+
+run(gen);
+```
+### 17.4.4 co模块的源码
+### 17.4.5 处理并发的异步操作
+```js
+// 数组的写法
+co(function* () {
+  var res = yield [
+    Promise.resolve(1),
+    Promise.resolve(2)
+  ];
+  console.log(res);
+}).catch(onerror);
+
+// 对象的写法
+co(function* () {
+  var res = yield {
+    1: Promise.resolve(1),
+    2: Promise.resolve(2),
+  };
+  console.log(res);
+}).catch(onerror);
+//下面是另一个例子。
+co(function* () {
+  var values = [n1, n2, n3];
+  yield values.map(somethingAsync);
+});
+
+function* somethingAsync(x) {
+  // do something async
+  return y
+}
+//上面的代码允许并发三个somethingAsync异步操作，等到它们全部完成，才会进行下一步。
+```
+
+## 17.5 async函数
+### 17.5.1 含义
+ES7提供了async函数，使得异步操作变得更加方便。
+async函数就是Generator函数的**语法糖**
+用法：
+```js
+var asyncReadFile = async function (){
+  var f1 = await readFile('/etc/fstab');
+  var f2 = await readFile('/etc/shells');
+  console.log(f1.toString());
+  console.log(f2.toString());
+};
+```
+async函数对 Generator 函数的改进，体现在以下**四点**:
+（1）**内置执行器**。Generator函数的执行必须靠执行器，所以才有了co模块，而async函数自带执行器。也就是说，async函数的执行，与普通函数一模一样，只要一行。
+```js
+var result = asyncReadFile();
+```
+（2）更好的语义。async和await，比起星号和yield，语义更清楚了。async表示函数里有异步操作，await表示紧跟在后面的表达式需要等待结果。
+
+（3）更广的适用性。 co模块约定，yield命令后面只能是Thunk函数或Promise对象，而async函数的await命令后面，可以是**Promise对象和原始类型的值**（数值、字符串和布尔值，但这时等同于同步操作）。
+
+（4）返回值是Promise。async函数的返回值是Promise对象，这比Generator函数的返回值是Iterator对象方便多了。你**可以用then**方法指定下一步的操作。
+
+进一步说，async函数完全可以看作多个异步操作，包装成的一个Promise对象，而await命令就是内部then命令的语法糖。
+正常情况下，await命令后面是一个Promise对象，否则会被转成Promise。
+
+### 17.5.2 async函数的实现
+### 17.5.3 async 函数的用法
+下面是一个例子
+```js
+async function getStockPriceByName(name) {
+  var symbol = await getStockSymbol(name);
+  var stockPrice = await getStockPrice(symbol);
+  return stockPrice;
+}
+
+getStockPriceByName('goog').then(function (result) {
+  console.log(result);
+});
+```
+指定多少毫秒后输出一个值
+```js
+function timeout(ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
+async function asyncPrint(value, ms) {
+  await timeout(ms);
+  console.log(value)
+}
+
+asyncPrint('hello world', 50);
+```
+Async函数有多种使用形式。
+```js
+// 函数声明
+async function foo() {}
+
+// 函数表达式
+const foo = async function () {};
+
+// 对象的方法
+let obj = { async foo() {} }
+
+// 箭头函数
+const foo = async () => {};
+```
+
+### 17.5.4 注意点
+第一点，await命令后面的Promise对象，运行结果可能是rejected，所以最好把await命令放在try...catch代码块中。
+```js
+async function myFunction() {
+  try {
+    await somethingThatReturnsAPromise();
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+```
+第二点，多个await命令后面的异步操作，如果不存在继发(同步)关系，最好让它们同时触发。
+```js
+// 写法一
+let [foo, bar] = await Promise.all([getFoo(), getBar()]);
+
+// 写法二
+let fooPromise = getFoo();
+let barPromise = getBar();
+let foo = await fooPromise;
+let bar = await barPromise;
+```
+上面两种写法，getFoo和getBar都是**同时触发**，这样就会缩短程序的执行时间。
+第三点，await命令只能用在async函数之中，如果用在普通函数，就会报错。
+如果确实希望多个请求并发执行，可以使用Promise.all方法。
+```js
+async function dbFuc(db) {
+  let docs = [{}, {}, {}];
+  let promises = docs.map((doc) => db.post(doc));
+
+  let results = await Promise.all(promises);
+  console.log(results);
+}
+
+// 或者使用下面的写法
+
+async function dbFuc(db) {
+  let docs = [{}, {}, {}];
+  let promises = docs.map((doc) => db.post(doc));
+
+  let results = [];
+  for (let promise of promises) {
+    results.push(await promise);
+  }
+  console.log(results);
+}
+```
+
+### 17.5.5 与Promise、Generator的比较
+假定某个DOM元素上面，部署了一系列的动画，前一个动画结束，才能开始后一个。如果当中有一个动画出错，就不再往下执行，返回上一个成功执行的动画的返回值。
+首先是Promise的写法。
+```js
+function chainAnimationsPromise(elem, animations) {
+
+  // 变量ret用来保存上一个动画的返回值
+  var ret = null;
+
+  // 新建一个空的Promise
+  var p = Promise.resolve();
+
+  // 使用then方法，添加所有动画
+  for(var anim in animations) {
+    p = p.then(function(val) {
+      ret = val;
+      return anim(elem);
+    })
+  }
+
+  // 返回一个部署了错误捕捉机制的Promise
+  return p.catch(function(e) {
+    /* 忽略错误，继续执行 */
+  }).then(function() {
+    return ret;
+  });
+
+}
+```
+虽然Promise的写法比回调函数的写法大大改进，但是一眼看上去，代码完全都是Promise的API（then、catch等等），操作本身的语义反而不容易看出来。
+
+接着是Generator函数的写法。
+```js
+function chainAnimationsGenerator(elem, animations) {
+
+  return spawn(function*() {
+    var ret = null;
+    try {
+      for(var anim of animations) {
+        ret = yield anim(elem);
+      }
+    } catch(e) {
+      /* 忽略错误，继续执行 */
+    }
+      return ret;
+  });
+
+}
+```
+上面代码使用Generator函数遍历了每个动画，语义比Promise写法更清晰，用户定义的操作全部都出现在spawn函数的内部。这个写法的问题在于，必须有一个任务运行器，自动执行Generator函数，上面代码的spawn函数就是自动执行器，它返回一个Promise对象，而且必须保证yield语句后面的表达式，必须返回一个Promise。
+
+最后是Async函数的写法。
+```js
+async function chainAnimationsAsync(elem, animations) {
+  var ret = null;
+  try {
+    for(var anim of animations) {
+      ret = await anim(elem);
+    }
+  } catch(e) {
+    /* 忽略错误，继续执行 */
+  }
+  return ret;
+}
+```
+可以看到Async函数的实现最简洁，最符合语义，几乎没有语义不相关的代码。它将Generator写法中的自动执行器，改在语言层面提供，不暴露给用户，因此代码量最少。如果使用Generator写法，自动执行器需要用户自己提供。
+
+# 18 Class
+先看下边这文章 http://keenwon.com/1524.html
+## 18.1 Class基本语法
+### 18.1.1 概述
+JavaScript语言的传统方法是通过**构造函数**，定义并生成新对象。
+ES6提供了更接近传统语言的写法，引入了Class（类）这个概念，作为对象的模板。
+通过class关键字，可以定义类。
+```js
+//构造函数
+function Point(x,y){
+  this.x = x;
+  this.y = y;
+}
+
+Point.prototype.toString = function () {
+  return '(' + this.x + ', ' + this.y + ')';
+}
+//类 改写
+class Point {
+
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+  }
+                       //这里没有逗号
+  toString() {
+    return '(' + this.x + ', ' + this.y + ')';
+  }
+
+}
+```
+方法之间**不需要逗号**分隔，加了会报错。
+构造函数的prototype属性，在ES6的“类”上面继续存在。
+事实上，类的所有方法**都定义在类的prototype属性上面**。
+```js
+class Point {
+  constructor(){
+    // ...
+  }
+
+  toString(){
+    // ...
+  }
+
+  toValue(){
+    // ...
+  }
+}
+
+// 等同于
+
+Point.prototype = {
+  toString(){},
+  toValue(){}
+}
+```
+**类的实例上面调用方法，其实就是调用原型上的方法**
+```js
+class B {}
+let b = new B();
+
+b.constructor === B.prototype.constructor // true
+```
+b是B类的实例，它的constructor方法就是B类原型的constructor方法。
+
+`Object.assign`方法可以很方便地一次向类**添加多个方法**。
+```js
+class Point {
+  constructor(){
+    // ...
+  }
+}
+
+Object.assign(Point.prototype, {
+  toString(){},
+  toValue(){}
+})
+```
+prototype对象的constructor属性，直接指向“类”的本身，这与ES5的行为是一致的。
+```js
+Point.prototype.constructor === Point // true
+```
+类的内部所有定义的方法，都是**不可枚举**的
+类的**属性**名，可以采用表达式。
+```js
+let methodName = "getArea";
+class Square{
+  constructor(length) {
+    // ...
+  }
+
+  [methodName]() {
+    // ...
+  }
+}
+```
+上面代码中，Square类的**方法**名getArea，是从表达式得到的。
+
+### 18.1.2 constructor方法
+constructor方法是类的默认方法，通过`new`命令**生成**对象实例时，自动调用该方法。
+一个类必须有constructor方法，如果没有显式定义，一个空的constructor方法会被**默认添加**。
+constructor方法默认返回实例对象（即this），完全可以指定**返回另外一个对象**。
+```js
+class Foo {
+  constructor() {
+    return Object.create(null);
+  }
+}
+
+new Foo() instanceof Foo
+// false
+```
+上面代码中，constructor函数返回一个全新的对象，结果导致实例对象不是Foo类的实例。
+
+### 18.1.3 实例对象
+生成实例对象的写法，与ES5完全一样，也是使用`new`命令。
+如果忘记加上new，像函数那样调用Class，将会报错。
+与ES5一样，实例的属性除非显式定义在其本身（即定义在this对象上），否则都是定义在原型上（即定义在class上）。
+```js
+//定义类
+class Point {
+
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+  }
+
+  toString() {
+    return '('+this.x+', '+this.y+')';
+  }
+
+}
+
+var point = new Point(2, 3);
+
+point.toString() // (2, 3)
+
+point.hasOwnProperty('x') // true
+point.hasOwnProperty('y') // true
+point.hasOwnProperty('toString') // false
+point.__proto__.hasOwnProperty('toString') // true
+```
+可以通过实例的__proto__属性为Class添加方法
+
+### 18.1.4 name属性
+ES6的Class只是ES5的构造函数的一层**包装**，所以函数的许多特性都被Class继承，包括name属性。
+```js
+class Point {}
+Point.name // "Point"
+```
+
+### 18.1.5 Class表达式
+与函数一样，Class也可以**使用表达式的形式定义**。
+```js
+const MyClass = class Me {
+  getClassName() {
+    return Me.name;
+  }
+};
+```
+上面代码使用表达式定义了一个类。
+需要**注意**的是，这个类的名字是`MyClass` **而不是** `Me`，Me只在Class的内部代码可用，指代当前类。
+```js
+let inst = new MyClass();
+inst.getClassName() // Me 必须通过内部调用
+Me.name // ReferenceError: Me is not defined
+```
+如果Class**内部没用到**的话，可以省略Me，也就是可以写成下面的形式。
+采用Class表达式，可以写出**立即执行**的Class。
+```js
+let person = new class {
+  constructor(name) {
+    this.name = name;
+  }
+
+  sayName() {
+    console.log(this.name);
+  }
+}("张三");
+
+person.sayName(); // "张三"
+```
+上面代码中，`person`是一个立即执行的Class的实例
+
+### 18.1.6 不存在变量提升
+Class**不存在变量提升**（hoist），这一点与ES5完全不同。
+
+### 18.1.7 严格模式
+类和模块的内部，**默认**就是严格模式，所以不需要使用use strict指定运行模式。
+
+## 18.2 Class的继承
+### 18.2.1 基本用法
+Class之间可以通过`extends`关键字实现继承，这比ES5的通过修改原型链实现继承，要清晰和方便很多。
+```js
+class ColorPoint extends Point {}
+```
+上面代码定义了一个ColorPoint类，该类通过`extends`关键字，继承了Point类的所有属性和方法。
+但是由于没有部署任何代码，所以这两个类完全一样，等于**复制**了一个Point类。下面，我们在ColorPoint内部加上代码。
+```js
+class ColorPoint extends Point {
+
+  constructor(x, y, color) {
+    super(x, y); // 调用父类的constructor(x, y)
+    this.color = color;
+  }
+
+  toString() {
+    return this.color + ' ' + super.toString(); // 调用父类的toString()
+  }
+
+}
+```
+上面代码中，constructor方法和toString方法之中，都出现了super关键字，它指代父类的实例（即父类的this对象）。
+子类必须在constructor方法中调用super方法，**否则新建实例时会报错**。这是因为**子类没有自己的this对象**，而是继承父类的this对象，然后对其进行加工。**如果不调用super方法，子类就得不到this对象**。
+
+```js
+class Point { /* ... */ }
+
+class ColorPoint extends Point {
+  constructor() {
+  }
+}
+
+let cp = new ColorPoint(); // ReferenceError 
+```
+上面代码中，ColorPoint继承了父类Point，但是它的构造函数**没有调用super方法**，导致新建实例时报错。
+ES5的继承，实质是先创造子类的实例对象this，然后再将父类的方法添加到this上面（Parent.apply(this)）。ES6的继承机制完全不同，实质是先创造父类的实例对象this（所以必须先调用super方法），然后再用子类的构造函数修改this。
+如果子类没有定义constructor方法，这个方法会被默认添加，代码如下。也就是说，不管有没有显式定义，**任何一个子类都有constructor方法**。
+另一个需要注意的地方是，在子类的构造函数中，**只有调用super之后**，才可以使用this关键字，否则会报错。
+这是因为子类实例的构建，是基于对父类实例加工，只有super方法才能返回父类实例。
+```js
+class Point {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+  }
+}
+
+class ColorPoint extends Point {
+  constructor(x, y, color) {
+    this.color = color; // ReferenceError
+    super(x, y);    //引入super
+    this.color = color; // 正确
+  }
+}
+```
+上面代码中，子类的constructor方法没有调用super之前，就使用this关键字，结果报错，而放在super方法之后就是正确的。
+
+下面是生成子类实例的代码。
+```js
+let cp = new ColorPoint(25, 8, 'green');
+
+cp instanceof ColorPoint // true
+cp instanceof Point // true
+```
+
+### 18.2.2 类的prototype属性和__proto__属性
+大多数浏览器的ES5实现之中，每一个对象都有__proto__属性，指向对应的构造函数的prototype属性。
+Class作为构造函数的语法糖，同时有prototype属性和__proto__属性，因此**同时存在两条继承链**。
+
+**类的继承**是按照下面的模式实现的。
+```js
+class A {
+}
+
+class B {
+}
+
+// B的实例继承A的实例
+Object.setPrototypeOf(B.prototype, A.prototype);
+
+// B继承A的静态属性
+Object.setPrototypeOf(B, A);
+```
+《对象的扩展》一章给出过`Object.setPrototypeOf`方法的实现。
+```js
+Object.setPrototypeOf(B.prototype, A.prototype);
+// 等同于
+B.prototype.__proto__ = A.prototype;
+
+Object.setPrototypeOf(B, A);
+// 等同于
+B.__proto__ = A;
+```
+这两条继承链，可以这样理解：作为一个对象，子类（B）的原型（__proto__属性）是父类（A）；作为一个构造函数，子类（B）的原型（prototype属性）是父类的实例。
+```js
+B.prototype = new A();
+// 等同于
+B.prototype.__proto__ = A.prototype;
+```
+
+### 18.2.3 Extends 的继承目标
+extends关键字后面可以跟多种类型的值
+上面代码的A，只要是一个有prototype属性的函数，就能被B继承。由于函数都有prototype属性，因此A可以是任意函数。
+
+下面，讨论三种特殊情况。
+
+第一种特殊情况，子类继承Object类。
+```js
+class A extends Object {
+}
+
+A.__proto__ === Object // true
+A.prototype.__proto__ === Object.prototype // true
+```
+这种情况下，A其实就是构造函数Object的复制，A的实例就是Object的实例。
+
+第二种特殊情况，不存在任何继承。
+```js
+class A {
+}
+
+A.__proto__ === Function.prototype // true
+A.prototype.__proto__ === Object.prototype // true
+```
+这种情况下，A作为一个基类（即不存在任何继承），就是一个普通函数，所以直接继承Funciton.prototype。但是，A调用后返回一个空对象（即Object实例），所以A.prototype.__proto__指向构造函数（Object）的prototype属性。
+
+第三种特殊情况，子类继承null。
+```js
+class A extends null {
+}
+
+A.__proto__ === Function.prototype // true
+A.prototype.__proto__ === undefined // true
+```
+这种情况与第二种情况非常像。A也是一个普通函数，所以直接继承Funciton.prototype。但是，A调用后返回的对象不继承任何方法，所以它的__proto__指向Function.prototype，即实质上执行了下面的代码。
+```js
+class C extends null {
+  constructor() { return Object.create(null); }
+}
+```
+
+### 18.2.4 Object.getPrototypeOf() 
+Object.getPrototypeOf方法可以用来从子类上获取父类。
+```js
+Object.getPrototypeOf(ColorPoint) === Point
+// true
+```
+因此，可以使用这个方法**判断**，一个类是否继承了另一个类。
+
+### 18.2.5 super关键字
+上面讲过，在子类中，**super关键字代表父类实例**。
+```js
+class B extends A {
+  get m() {
+    return this._p * super._p;
+  }
+  set m() {
+    throw new Error('该属性只读');
+  }
+}
+```
+上面代码中，子类**通过super关键字，调用父类的实例**。
+
+由于，对象总是继承其他对象的，所以可以在任意一个对象中，使用super关键字。
+```js
+var obj = {
+  toString() {
+    return "MyObject: " + super.toString();
+  }
+}
+
+obj.toString(); // MyObject: [object Object]
+```
+
+### 18.2.6 实例的__proto__属性
+子类实例的__proto__属性的__proto__属性，指向父类实例的__proto__属性。也就是说，**子类的原型的原型，是父类的原型**。
+```js
+var p1 = new Point(2, 3);
+var p2 = new ColorPoint(2, 3, 'red');
+
+p2.__proto__ === p1.__proto__ // false
+p2.__proto__.__proto__ === p1.__proto__ // true
+```
+上面代码中，ColorPoint继承了Point，导致前者原型的原型是后者的原型。
+
+因此，通过子类实例的__proto__.__proto__属性，可以修改父类实例的行为。
+
+## 18.3 原生构造函数的继承
+原生构造函数是指语言内置的构造函数，通常用来生成数据结构。ECMAScript的原生构造函数大致有下面这些。
+
+Boolean()
+Number()
+String()
+Array()
+Date()
+Function()
+RegExp()
+Error()
+Object()
+以前，这些原生构造函数是无法继承的，比如，不能自己定义一个Array的子类。
+ES6是先新建父类的实例对象this，然后再用子类的构造函数修饰this，使得父类的所有行为都可以继承。下面是一个继承Array的例子。
+```js
+class MyArray extends Array {
+  constructor(...args) {
+    super(...args);
+  }
+}
+
+var arr = new MyArray();
+arr[0] = 12;
+arr.length // 1
+
+arr.length = 0;
+arr[0] // undefined
+```
+注意，继承Object的子类，有一个行为差异。
+```js
+class NewObj extends Object{
+  constructor(){
+    super(...arguments);
+  }
+}
+var o = new NewObj({attr: true});
+console.log(o.attr === true);  // false
+```
+上面代码中，NewObj继承了Object，但是无法通过super方法向父类Object传参。这是因为ES6改变了Object构造函数的行为，一旦发现Object方法**不是通过new Object()这种形式调用**，ES6规定Object构造函数会**忽略参数**。
+
+## 18.4 Class的取值函数（getter）和存值函数（setter）
+与ES5一样，在Class内部可以使用get和set关键字，对某个属性设置存值函数和取值函数，拦截该属性的存取行为。
+```js
+class MyClass {
+  constructor() {
+    // ...
+  }
+  get prop() {
+    return 'getter';
+  }
+  set prop(value) {
+    console.log('setter: '+value);
+  }
+}
+
+let inst = new MyClass();
+
+inst.prop = 123;
+// setter: 123
+
+inst.prop
+// 'getter'
+```
+
+## 18.5 Class的Generator方法
+如果某个方法之前加上星号（*），就表示该方法是一个Generator函数。
+```js
+class Foo {
+  constructor(...args) {
+    this.args = args;
+  }
+  * [Symbol.iterator]() {
+    for (let arg of this.args) {
+      yield arg;
+    }
+  }
+}
+
+for (let x of new Foo('hello', 'world')) {
+  console.log(x);
+}
+// hello
+// world
+```
+
+## 18.6 Class的静态方法
+类相当于实例的原型，所有在类中定义的方法，都会被实例继承。如果在一个方法前，加上`static`关键字，就表示该方法**不会被实例继承**，而是直接通过类来调用，这就称为“静态方法”。
+```js
+class Foo {
+  static classMethod() {
+    return 'hello';
+  }
+}
+
+Foo.classMethod() // 'hello'
+
+var foo = new Foo();
+foo.classMethod()
+// TypeError: undefined is not a function
+```
+上面代码中，Foo类的classMethod方法前有static关键字，表明该方法是一个静态方法，可以直接在Foo类上调用（Foo.classMethod()），**而不是在Foo类的实例上调用**。
+父类的静态方法，可以被**子类继承**（而不是实例）。
+```js
+class Foo {
+  static classMethod() {
+    return 'hello';
+  }
+}
+
+class Bar extends Foo {
+}
+
+Bar.classMethod(); // 'hello'
+```
+上面代码中，父类Foo有一个静态方法，子类Bar可以调用这个方法。
+
+静态方法也是可以从super对象上调用的。
+
+## 18.7 Class的静态属性和实例属性
+静态属性指的是Class**本身的属性**，即`Class.propname`，而不是定义在实例对象（this）上的属性。
+```js
+class Foo {
+}
+
+Foo.prop = 1;
+Foo.prop // 1
+```
+上面的写法为Foo类定义了一个静态属性prop。
+目前，只有这种写法可行，因为ES6明确规定，Class内部只有**静态方法**，没有**静态属性**。
+ES7有一个静态属性的提案，目前Babel转码器支持。
+这个提案对**实例属性和静态属性**，都规定了新的写法。
+（1）类的实例属性
+
+类的实例属性可以用等式，写入类的定义之中。
+```js
+class MyClass {
+  myProp = 42;
+
+  constructor() {
+    console.log(this.myProp); // 42
+  }
+}
+```
+以前，我们定义实例属性，只能写在类的constructor方法里面。
+有了新的写法以后，**可以不在constructor方法里面定义**。
+```js
+class ReactCounter extends React.Component {
+  state = {
+    count: 0
+  };
+}
+```
+为了可读性的目的，对于那些在constructor里面已经定义的实例属性，新写法允许直接列出。
+```js
+class ReactCounter extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      count: 0
+    };
+  }
+  state;
+}
+```
+（2）类的静态属性
+
+类的静态属性只要在上面的实例属性写法前面，加上`static`关键字就可以了。
+```js
+class MyClass {
+  static myStaticProp = 42;
+
+  constructor() {
+    console.log(MyClass.myProp); // 42
+  }
+}
+```
+同样的，这个新写法大大方便了静态属性的表达。
+```js
+// 老写法
+class Foo {
+}
+Foo.prop = 1;
+
+// 新写法
+class Foo {
+  static prop = 1;
+}
+```
+## 18.8 new.target属性
+new是从构造函数生成实例的命令。ES6为new命令引入了一个`new.target`属性，（在构造函数中）返回new命令作用于的**那个构造函数**。如果构造函数不是通过new命令调用的，new.target会返回`undefined`，因此这个属性可以用来确定构造函数是怎么调用的。
+```js
+function Person(name) {
+  if (new.target !== undefined) {
+    this.name = name;
+  } else {
+    throw new Error('必须使用new生成实例');
+  }
+}
+
+// 另一种写法
+function Person(name) {
+  if (new.target === Person) {
+    this.name = name;
+  } else {
+    throw new Error('必须使用new生成实例');
+  }
+}
+
+var person = new Person('张三'); // 正确
+var notAPerson = Person.call(person, '张三');  // 报错
+```
+上面代码**确保构造函数只能通过new命令调用**。
+Class内部调用new.target，**返回当前Class**。
+```js
+class Rectangle {
+  constructor(length, width) {
+    console.log(new.target === Rectangle);
+    this.length = length;
+    this.width = width;
+  }
+}
+
+var obj = new Rectangle(3, 4); // 输出 true
+```
+**子类继承父类时，new.target会返回子类**。
+利用这个特点，可以写出不能独立使用、**必须继承后才能使用的类**。
+```js
+class Shape {
+  constructor() {
+    if (new.target === Shape) {
+      throw new Error('本类不能实例化');
+    }
+  }
+}
+
+class Rectangle extends Shape {
+  constructor(length, width) {
+    super();
+    // ...
+  }
+}
+
+var x = new Shape();  // 报错
+var y = new Rectangle(3, 4);  // 正确
+```
+上面代码中，Shape类不能被实例化，只能用于继承。
+
+注意，**在函数外部**，使用new.target会报错。
+
+## 18.9 Mixin模式的实现
+Mixin模式指的是，将多个类的接口“混入”（mix in）另一个类。它在ES6的实现如下。
+```js
+function mix(...mixins) {
+  class Mix {}
+
+  for (let mixin of mixins) {
+    copyProperties(Mix, mixin);
+    copyProperties(Mix.prototype, mixin.prototype);
+  }
+
+  return Mix;
+}
+
+function copyProperties(target, source) {
+  for (let key of Reflect.ownKeys(source)) {
+    if ( key !== "constructor"
+      && key !== "prototype"
+      && key !== "name"
+    ) {
+      let desc = Object.getOwnPropertyDescriptor(source, key);
+      Object.defineProperty(target, key, desc);
+    }
+  }
+}
+```
+上面代码的mix函数，可以将多个对象合成为一个类。使用的时候，只要继承这个类即可。
+```js
+class DistributedEdit extends mix(Loggable, Serializable) {
+  // ...
+}
+```
+# 19 Decorator修饰器
+//下边内容自己搜的是python的描述
+装饰器是一个很著名的设计模式，经常被用于有切面需求的场景，较为经典的有插入日志、性能测试、事务处理, Web权限校验, Cache等。
+很有名的例子，就是咖啡，加糖的咖啡，加牛奶的咖啡。本质上，还是咖啡，只是在原有的东西上，做了“装饰”，使之附加一些功能或特性。
+例如记录日志，需要对某些函数进行记录
+笨的办法，每个函数加入代码，如果代码变了，就悲催了
+装饰器的办法，定义一个专门日志记录的装饰器，对需要的函数进行装饰，搞定
+
+装饰器是一个函数,一个用来包装函数的函数，装饰器在函数申明完成的时候被调用，调用之后返回一个修改之后的函数对象，将其重新赋值原来的标识符，并永久丧失对原始函数对象的访问(申明的函数被换成一个被装饰器装饰过后的函数)
+当我们对某个方法应用了装饰方法后， 其实就改变了被装饰函数名称所引用的函数代码块入口点，使其重新指向了由装饰方法所返回的函数入口点。
+由此我们可以用decorator改变某个原有函数的功能，添加各种操作，或者完全改变原有实现
+## 19.1 类的修饰
+修饰器（Decorator）是一个函数，用来修改**类的行为**。
+修饰器对类的行为的改变，是**代码编译时**发生的，而不是在运行时。
+```js
+function testable(target) {
+  target.isTestable = true;
+}
+
+@testable
+class MyTestableClass {}
+
+console.log(MyTestableClass.isTestable) // true
+```
+上面代码中，**@testable就是一个修饰器**。它修改了MyTestableClass这个类的行为，为它**加上了**静态属性isTestable。
+**修饰器的行为就是下面这样**
+```js
+@decorator
+class A {}
+
+// 等同于
+
+class A {}
+A = decorator(A) || A;
+```
+也就是说，修饰器**本质**就是编译时**执行的函数**。
+修饰器函数的**第一个参数**，就是所要修饰的目标类。
+```js
+function testable(target) {
+  // ...
+}
+```
+上面代码中，testable函数的参数`target`，就是**会被修饰**的类。
+如果觉得**一个参数不够用**，可以在修饰器外面**再封装一层函数**。
+```js
+function testable(isTestable) {
+  return function(target) {
+    target.isTestable = isTestable;
+  }
+}
+
+@testable(true)
+class MyTestableClass {}
+MyTestableClass.isTestable // true
+
+@testable(false)
+class MyClass {}
+MyClass.isTestable // false
+```
+上面代码中，修饰器testable可以接受参数，这就**等于**可以修改修饰器的行为。
+前面的例子是为类添加一个静态属性，如果想添加实例属性，可以通过目标类的prototype对象操作。
+```js
+function testable(target) {
+  target.prototype.isTestable = true;    //在prototype上定义就可以在实例上调用
+}
+
+@testable
+class MyTestableClass {}
+
+let obj = new MyTestableClass();
+obj.isTestable // true
+```
+上面代码中，修饰器函数testable是在目标类的prototype对象上添加属性，因此就可以在实例上调用。
+## 19.2 方法的修饰
+修饰器不仅可以**修饰类**，还可以修饰类的**属性**。
+修饰器函数一共可以接受**三个参数**，第一个参数是所要修饰的**目标对象**，第二个参数是所要修饰的**属性名**，第三个参数是该属性的**描述对象**。
+```js
+function readonly(target, name, descriptor){
+  // descriptor对象原来的值如下
+  // {
+  //   value: specifiedFunction,
+  //   enumerable: false,
+  //   configurable: true,
+  //   writable: true
+  // };
+  descriptor.writable = false;
+  return descriptor;
+}
+
+readonly(Person.prototype, 'name', descriptor);
+// 类似于
+Object.defineProperty(Person.prototype, 'name', descriptor);
+```
+上面代码说明，修饰器（readonly）会修改属性的描述对象（descriptor），**然后**被修改的描述对象再用来定义属性。
+下面是另一个例子，修改属性描述对象的enumerable属性，**使得该属性不可遍历**。
+```js
+class Person {
+  @nonenumerable
+  get kidCount() { return this.children.length; }
+}
+
+function nonenumerable(target, name, descriptor) {
+  descriptor.enumerable = false;
+  return descriptor;
+}
+```
+修饰器有**注释的作用**。
+```js
+@testable
+class Person {
+  @readonly
+  @nonenumerable
+  name() { return `${this.first} ${this.last}` }
+}
+```
+从上面代码中，我们一眼就能看出，Person类是可测试的，而name方法是只读和不可枚举的。
+如果同一个方法有多个修饰器，会**像剥洋葱一样，先从外到内进入，然后由内向外执行**。
+```js
+function dec(id){
+    console.log('evaluated', id);
+    return (target, property, descriptor) => console.log('executed', id);
+}
+
+class Example {
+    @dec(1)
+    @dec(2)
+    method(){}
+}
+// evaluated 1
+// evaluated 2
+// executed 2
+// executed 1
+```
+## 19.3 为什么修饰器不能用于函数？
+修饰器只能用于类和类的方法，不能用于函数，**因为存在函数提升**。
+
+## 19.4 core-decorators.js
+core-decorators.js是一个第三方模块，提供了几个常见的修饰器，通过它可以更好地理解修饰器。
+### 19.4.1 @autobind
+autobind修饰器使得方法中的this对象，绑定原始对象。
+```js
+import { autobind } from 'core-decorators';
+
+class Person {
+  @autobind
+  getPerson() {
+    return this;
+  }
+}
+
+let person = new Person();
+let getPerson = person.getPerson;
+
+getPerson() === person;
+// true
+```
+### 19.4.2 @readonly
+readonly修饰器使得属性或方法不可写。
+```js
+import { readonly } from 'core-decorators';
+
+class Meal {
+  @readonly
+  entree = 'steak';
+}
+
+var dinner = new Meal();
+dinner.entree = 'salmon';
+// Cannot assign to read only property 'entree' of [object Object]
+```
+### 19.4.3 override
+override修饰器检查子类的方法，是否正确覆盖了父类的同名方法，如果不正确会报错。
+```js
+import { override } from 'core-decorators';
+
+class Parent {
+  speak(first, second) {}
+}
+
+class Child extends Parent {
+  @override
+  speak() {}
+  // SyntaxError: Child#speak() does not properly override Parent#speak(first, second)
+}
+
+// or
+
+class Child extends Parent {
+  @override
+  speaks() {}
+  // SyntaxError: No descriptor matching Child#speaks() was found on the prototype chain.
+  //
+  //   Did you mean "speak"?
+}
+```
+### 19.4.4 @deprecate (别名@deprecated)
+deprecate或deprecated修饰器在控制台显示一条警告，表示该方法将废除。
+
+### 19.4.5 @suppressWarnings
+suppressWarnings修饰器抑制decorated修饰器导致的console.warn()调用。但是，异步代码发出的调用除外。
+
+## 19.5 使用修饰器实现自动发布事件
+我们可以使用修饰器，使得对象的方法被调用时，自动发出一个事件。
+```js
+import postal from "postal/lib/postal.lodash";
+
+export default function publish(topic, channel) {
+  return function(target, name, descriptor) {
+    const fn = descriptor.value;
+
+    descriptor.value = function() {
+      let value = fn.apply(this, arguments);
+      postal.channel(channel || target.channel || "/").publish(topic, value);
+    };
+  };
+}
+```
+上面代码定义了一个名为publish的修饰器，它通过改写descriptor.value，使得原方法被调用时，会自动发出一个事件。它使用的事件“发布/订阅”库是Postal.js。
+
+用法如下：
+```js
+import publish from "path/to/decorators/publish";
+
+class FooComponent {
+  @publish("foo.some.message", "component")
+  someMethod() {
+    return {
+      my: "data"
+    };
+  }
+  @publish("foo.some.other")
+  anotherMethod() {
+    // ...
+  }
+}
+```
+以后，只要调用someMethod或者anotherMethod，就会自动发出一个事件。
+```js
+let foo = new FooComponent();
+
+foo.someMethod() // 在"component"频道发布"foo.some.message"事件，附带的数据是{ my: "data" }
+foo.anotherMethod() // 在"/"频道发布"foo.some.other"事件，不附带数据
+```
+
+## 19.6 Mixin
+在修饰器的基础上，可以实现Mixin模式。所谓Mixin模式，就是对象继承的一种替代方案，中文译为“混入”（mix in），意为在一个对象之中混入另外一个对象的方法。
+请看下面的例子。
+```js
+const Foo = {
+  foo() { console.log('foo') }
+};
+
+class MyClass {}
+
+Object.assign(MyClass.prototype, Foo);
+
+let obj = new MyClass();
+obj.foo() // 'foo'
+```
+上面代码之中，对象Foo有一个foo方法，通过Object.assign方法，可以将foo方法“混入”MyClass类，导致MyClass的实例obj对象都具有foo方法。这就是“混入”模式的一个简单实现。
+
+## 19.7 Trait
+Trait也是一种修饰器，效果与Mixin类似，但是提供更多功能，比如防止同名方法的冲突、排除混入某些方法、为混入的方法起别名等等。
+
+## 19.8 Babel转码器的支持
+目前，Babel转码器已经支持Decorator。
+配置方法省略
+
+# 20 Module
+ES6的Class只是面向对象编程的语法糖，升级了ES5的构造函数的原型链继承的写法，并没有解决模块化问题。Module功能就是为了解决这个问题而提出的。
+
+历史上，JavaScript一直没有模块（module）体系，无法将一个大程序拆分成互相依赖的小文件，再用简单的方法拼装起来。其他语言都有这项功能，比如Ruby的require、Python的import，甚至就连CSS都有@import，但是JavaScript任何这方面的支持都没有，这对开发大型的、复杂的项目形成了巨大障碍。
+
+在ES6之前，社区制定了一些模块加载方案，最主要的有CommonJS和AMD两种。**前者用于服务器，后者用于浏览器**。ES6在语言规格的层面上，实现了模块功能，而且实现得相当简单，完全可以取代现有的CommonJS和AMD规范，成为浏览器和服务器通用的模块解决方案。
+
+ES6模块的设计思想，是尽量的静态化，使得编译时就能确定模块的依赖关系，以及输入和输出的变量。CommonJS和AMD模块，都只能在运行时确定这些东西。比如，CommonJS**模块就是对象**，输入时必须查找对象属性。
+```js
+// CommonJS模块
+let { stat, exists, readFile } = require('fs');
+
+// 等同于
+let _fs = require('fs');
+let stat = _fs.stat, exists = _fs.exists, readfile = _fs.readfile;
+```
+上面代码的实质是整体加载fs模块（即加载fs的所有方法），生成一个对象（_fs），然后再从这个对象上面读取3个方法。这种加载称为“运行时加载”，因为**只有运行时才能得到这个对象**，导致完全没办法在编译时做“静态优化”。
+
+ES6模块**不是对象**，而是通过`export`命令显式指定输出的代码，输入时也采用静态命令的形式。
+```js
+// ES6模块
+import { stat, exists, readFile } from 'fs';
+```
+上面代码的实质是从fs模块加载3个方法，**其他方法不加载**。这种加载称为“编译时加载”，即ES6可以在编译时就完成模块加载，效率要比CommonJS模块的加载方式高。当然，这也导致了没法引用ES6模块本身，因为它不是对象。
+
+由于ES6模块是编译时加载，使得静态分析成为可能。有了它，就能进一步拓宽JavaScript的语法，比如引入宏（macro）和类型检验（type system）这些只能靠静态分析实现的功能。
+
+除了静态加载带来的各种好处，ES6模块还有以下好处。
+
+不再需要UMD模块格式了，将来服务器和浏览器都会支持ES6模块格式。目前，通过各种工具库，其实已经做到了这一点。
+将来浏览器的新API就能用模块格式提供，不再必要做成全局变量或者navigator对象的属性。
+不再需要对象作为命名空间（比如Math对象），未来这些功能可以通过模块提供。
+## 20.1 严格模式
+ES6的模块自动采用严格模式，不管你有没有在模块头部加上`"use strict"`;。
+
+严格模式主要有以下限制。
+
+变量必须声明后再使用
+函数的参数不能有同名属性，否则报错
+不能使用with语句
+不能对只读属性赋值，否则报错
+不能使用前缀0表示八进制数，否则报错
+不能删除不可删除的属性，否则报错
+不能删除变量delete prop，会报错，只能删除属性delete global\[prop]
+eval不会在它的外层作用域引入变量
+eval和arguments不能被重新赋值
+arguments不会自动反映函数参数的变化
+不能使用arguments.callee
+不能使用arguments.caller
+禁止this指向全局对象
+不能使用fn.caller和fn.arguments获取函数调用的堆栈
+增加了保留字（比如protected、static和interface）
+
+# 20.2 export命令
+模块功能主要由两个命令构成：`export`和`import`。
+`export`命令用于**规定模块**的对外接口，`import`命令用于输入**其他模块**提供的功能。
+一个模块就是一个独立的文件。该文件内部的所有变量，外部无法获取。如果你希望外部能够读取模块内部的某个变量，就必须使用export关键字输出该变量。
+```js
+// profile.js
+export var firstName = 'Michael';
+export var lastName = 'Jackson';
+export var year = 1958;
+```
+export的**写法**，除了像上面这样，还有另外一种。**优先考虑使用这种写法。**
+```js
+// profile.js
+var firstName = 'Michael';
+var lastName = 'Jackson';
+var year = 1958;
+
+export {firstName, lastName, year};        //注意大括号
+```
+通常情况下，export输出的变量就是本来的名字，但是可以使用`as`关键字**重命名**。
+```js
+function v1() { ... }
+function v2() { ... }
+
+export {
+  v1 as streamV1,
+  v2 as streamV2,
+  v2 as streamLatestVersion
+};
+```
+注意的是，export命令规定的是对外的接口，必须与模块内部的**变量**建立一一对应关系。
+```js
+// 报错
+export 1;
+
+// 报错
+var m = 1;
+export m;
+```
+上面两种写法都会报错，因为没有提供对外的接口。第一种写法直接输出1，第二种写法通过变量m，还是直接输出1。1只是一个值，不是接口。**正确的写法**是下面这样。
+```js
+// 写法一
+export var m = 1;
+
+// 写法二
+var m = 1;
+export {m};         //注意大括号
+
+// 写法三
+var n = 1;
+export {n as m};
+```
+同样的，`function`和`class`的输出，也必须遵守这样的写法。
+```js
+// 报错
+function f() {}
+export f;
+
+// 正确
+export function f() {};
+
+// 正确
+function f() {}
+export {f};                //推荐
+```
+最后，export命令可以出现在模块的**任何位置**，只要处于模块**顶层**就可以。
+
+## 20.3 import命令
+使用export命令定义了模块的对外接口以后，其他JS文件就可以通过`import`命令**加载**这个模块（文件）。
+```js
+// main.js
+
+import {firstName, lastName, year} from './profile';
+
+function setName(element) {
+  element.textContent = firstName + ' ' + lastName;
+}
+```
+如果想为输入的变量重新取一个名字，import命令要使用as关键字，将输入的**变量重命名**。
+注意，import命令具有**提升**效果，会提升到整个模块的**头部**，**首先执行**。
+```js
+foo();         //不会报错，因为import会提升foo
+ 
+import { foo } from 'my_module'; 
+```
+如果在一个模块之中，**先输入后输出**同一个模块，import语句可以与export语句写在一起。
+```js
+export { es6 as default } from './someModule';
+
+// 等同于
+import { es6 } from './someModule';
+export default es6;
+```
+另外，ES7有一个提案，简化先输入后输出的写法，**拿掉输出时的大括号**。
+```js
+// 提案的写法
+export v from 'mod';
+
+// 现行的写法
+export {v} from 'mod';
+```
+## 20.4 模块的整体加载
+除了指定加载某个输出值，还可以使用整体加载，即用星号`*`指定一个对象，所有输出值都加载在这个对象上面。
+下面是一个circle.js文件，它输出两个方法area和circumference。
+```js
+// circle.js
+
+export function area(radius) {
+  return Math.PI * radius * radius;
+}
+
+export function circumference(radius) {
+  return 2 * Math.PI * radius;
+}
+```
+加载这个模块
+```js
+// main.js
+//逐一指定要加载的方法
+import { area, circumference } from './circle';
+//整体加载的写法
+import * as circle from './circle';
+```
+
+## 20.5 export default命令
+不知道模块有哪些属性和方法，可以用到`export default`命令，为模块指定默认输出。
+```js
+// export-default.js
+export default function () {
+  console.log('foo');
+}
+```
+上面代码是一个模块文件export-default.js，它的默认输出是一个函数。
+
+其他模块加载该模块时，import命令可以为该匿名函数**指定任意名字**
+```js
+// import-default.js
+import customName from './export-default';
+customName(); // 'foo'
+```
+需要注意的是，这时import命令后面，**不使用大括号**。
+export default命令用在**非匿名函数**前，也是可以的。
+```js
+// export-default.js
+export default function foo() {
+  console.log('foo');
+}
+
+// 或者写成
+
+function foo() {
+  console.log('foo');
+}
+
+export default foo;   //非匿名函数
+```
+**常用输入输出格式**
+有了export default命令，输入模块时就非常直观了，以输入jQuery模块为例。
+```js
+import $ from 'jquery';
+```
+如果想在一条import语句中，**同时输入默认方法和其他变量**，可以写成下面这样。
+```js
+import customName, { otherMethod } from './export-default';
+```
+如果要输出默认的**值**，只需将值跟在export default之后即可。
+```js
+export default 42;
+```
+export default也可以用来输出类。
+```js
+// MyClass.js
+export default class { ... }
+
+// main.js
+import MyClass from 'MyClass'
+let o = new MyClass();
+```
+
+## 20.6 模块的继承
+模块之间也可以继承。
+
+假设有一个circleplus模块，继承了circle模块。
+```js
+// circleplus.js
+
+export * from 'circle';
+export var e = 2.71828182846;
+export default function(x) {
+  return Math.exp(x);
+}
+```
+上面代码中的`export *`，表示再输出circle模块的所有属性和方法。
+**注意**，`export *`命令会**忽略**circle模块的`default`方法。
+加载上面模块的写法如下。
+```js
+// main.js
+
+import * as math from 'circleplus';
+import exp from 'circleplus';
+console.log(exp(math.e));
+```
+
+## 20.7 ES6模块加载的实质
+ES6模块加载的机制，与CommonJS模块完全不同。
+CommonJS模块输出的是一个值的**拷贝**，而ES6模块输出的是值的**引用**。
+CommonJS模块输出的是被输出值的**拷贝**，也就是说，一旦输出一个值，模块内部的变化就**影响不到**这个值。
+ES6模块的运行机制与CommonJS不一样，它遇到模块加载命令import时，**不会去执行模块**，而是只生成一个**动态的只读引用**。等到真的**需要用到时**，再到模块里面去取值，换句话说，ES6的输入有点像Unix系统的”符号连接“，原始值变了，import输入的值也会跟着变。
+因此，**ES6模块是动态引用，并且不会缓存值**，模块里面的变量绑定其所在的模块。
+
+## 20.8 循环加载
+“循环加载”（circular dependency）指的是，a脚本的执行依赖b脚本，而b脚本的执行又依赖a脚本。
+```js
+// a.js
+var b = require('b');
+
+// b.js
+var a = require('a');
+```
+通常，“循环加载”表示存在**强耦合**，如果处理不好，还可能导致递归加载，使得程序无法执行，因此应该避免出现。
+但是实际上，这是很难避免的，尤其是依赖关系复杂的大项目
+目前最常见的两种模块格式CommonJS和ES6，**处理“循环加载”的方法是不一样**的，返回的**结果也不一样**。
+
+### 20.8.1 CommonJS模块的加载原理
+CommonJS的一个模块，就是一个脚本文件。require命令**第一次加载该脚本**，就会**执行整个脚本**，然后在**内存生成**一个对象。
+CommonJS模块无论加载多少次，都只会在第一次加载时运行一次，以后再加载，就**返回第一次运行的结果**，**除非手动清除系统缓存**。
+
+### 20.8.2 CommonJS模块的循环加载
+CommonJS模块的重要特性是加载时执行，即脚本代码在require的时候，就会全部执行。
+一旦出现某个模块被"循环加载"，就只输出已经执行的部分，**还未执行的部分不会输出**。
+让我们来看，Node官方文档里面的例子。脚本文件a.js代码如下。
+```js
+exports.done = false;
+var b = require('./b.js');
+console.log('在 a.js 之中，b.done = %j', b.done);
+exports.done = true;
+console.log('a.js 执行完毕');
+```
+上面代码之中，a.js脚本先输出一个done变量，然后加载另一个脚本文件b.js。注意，此时a.js代码就停在这里，等待b.js执行完毕，再往下执行。
+
+再看b.js的代码。
+```js
+exports.done = false;
+var a = require('./a.js');
+console.log('在 b.js 之中，a.done = %j', a.done);
+exports.done = true;
+console.log('b.js 执行完毕');
+```
+上面代码之中，b.js执行到第二行，就会去加载a.js，这时，就发生了“循环加载”。系统会去a.js模块对应对象的exports属性取值，可是因为a.js还没有执行完，从exports属性只能取回已经执行的部分，而不是最后的值。
+
+a.js已经执行的部分，只有一行。
+```js
+exports.done = false;
+```
+因此，对于b.js来说，它从a.js只输入一个变量done，值为false。
+因此，对于b.js来说，它从a.js只输入一个变量done，值为false。
+
+然后，b.js**接着往下执行**(a只运行一行，所以就执行这一行之后，继续向下运行)，等到全部执行完毕，再把执行权交还给a.js。于是，a.js接着往下执行，直到执行完毕。我们写一个脚本main.js，验证这个过程。
+```js
+var a = require('./a.js');
+var b = require('./b.js');
+console.log('在 main.js 之中, a.done=%j, b.done=%j', a.done, b.done);
+```
+执行main.js，运行结果如下。
+```js
+$ node main.js
+
+在 b.js 之中，a.done = false
+b.js 执行完毕
+在 a.js 之中，b.done = true
+a.js 执行完毕
+在 main.js 之中, a.done=true, b.done=true
+```
+上面的代码证明了两件事。一是，在b.js之中，a.js没有执行完毕，只执行了第一行。二是，main.js执行到第二行时，不会再次执行b.js，而是输出缓存的b.js的执行结果，即它的第四行。
+```js
+exports.done = true;
+```
+总之，CommonJS输入的是被输出值的拷贝，不是引用。
+
+另外，由于CommonJS模块遇到循环加载时，返回的是当前已经执行的部分的值，而不是代码全部执行后的值，两者可能会有差异。所以，输入变量的时候，必须非常小心。
+```js
+var a = require('a'); // 安全的写法
+var foo = require('a').foo; // 危险的写法
+
+exports.good = function (arg) {
+  return a.foo('good', arg); // 使用的是 a.foo 的最新值
+};
+
+exports.bad = function (arg) {
+  return foo('bad', arg); // 使用的是一个部分加载时的值
+};
+```
+上面代码中，如果发生循环加载，require('a').foo的值很可能后面会被改写，改用require('a')会更保险一点。
+
+### 20.8.3 ES6模块的循环加载
+ES6处理“循环加载”与CommonJS有本质的不同。ES6模块是动态引用，遇到模块加载命令import时，不会去执行模块，只是生成一个指向被加载模块的引用，需要开发者自己保证，真正取值的时候能够取到值。
+```js
+// a.js
+import {bar} from './b.js';
+export function foo() {
+  bar();
+  console.log('执行完毕');
+}
+foo();
+
+// b.js
+import {foo} from './a.js';
+export function bar() {
+  if (Math.random() > 0.5) {
+    foo();
+  }
+}
+```
+按照CommonJS规范，上面的代码是没法执行的。a先加载b，然后b又加载a，这时a还没有任何执行结果，所以输出结果为null，即对于b.js来说，变量foo的值等于null，后面的foo()就会报错。
+
+但是，ES6可以执行上面的代码。
+```js
+$ babel-node a.js
+
+执行完毕
+```
+a.js之所以能够执行，原因就在于ES6加载的变量，都是动态引用其所在的模块。只要引用是存在的，代码就能执行。
+
+# 21 编程风格
