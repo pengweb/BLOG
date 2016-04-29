@@ -360,7 +360,7 @@ alert(person.name);    //'Nicholas'
 ### 4.1.4 检查数据类型
 typeof返回的字符串有`undefined`、`boolean`、`string`、`number`、`object`、`function`
 typeof(null)   //object,因为被作为一个空对象使用
-typeof(正则表达式)   //function  因为内部实现[[Call]]方法的对象都返回function
+typeof(正则表达式)   //function  因为内部实现`[[Call]]`方法的对象都返回function
 
 instanceof判断引用类型，**判断是否是实例**返回值为`true`和`false`
 person instanceof Object  //判断是不是对象
@@ -542,7 +542,7 @@ colors.concat('green',\['blue','black'])
 可接受一个或者两个参数，即要返回的**起始和结束的位置**
 slice()不会影响原始数组
 
-`splice`可以实现`插入``删除``替换`
+`splice`可以实现`插入` `删除` `替换`
 删除：两个参数
 第一个参数为第一项的**位置**，第二个参数为删除的**项数**
 插入：两个参数(第二个参数为0)+插入项
@@ -612,6 +612,115 @@ alert(sum);    //15
 第四次prev是10，cur是5
 第五次prev是15，返回15
 
+### 5.2.10 数组去重的5个方法
+#### 5.2.10.1 遍历数组法
+最简单的去重方法
+**实现思路**：新建一新数组，遍历传入数组，**值不在新数组就加入该新数组中**；
+**注意点**：判断值是否在数组的方法“indexOf”是ECMAScript5 方法，IE8以下不支持，需多写一些兼容低版本浏览器代码，源码如下：
+```js
+// 最简单数组去重法
+function unique1(array){
+  var n = []; //一个新的临时数组
+  //遍历当前数组
+  for(var i = 0; i < array.length; i++){
+    //如果当前数组的第i已经保存进了临时数组，那么跳过，
+    //否则把当前项push到临时数组里面
+    if (n.indexOf(array[i]) == -1) n.push(array[i]);
+  }
+  return n;
+}
+```
+```js
+// 判断浏览器是否支持indexOf ，indexOf 为ecmaScript5新方法 IE8以下（包括IE8， IE8只支持部分ecma5）不支持
+if (!Array.prototype.indexOf){
+  // 新增indexOf方法
+  Array.prototype.indexOf = function(item){
+    var result = -1, a_item = null;
+    if (this.length == 0){
+      return result;
+    }
+    for(var i = 0, len = this.length; i < len; i++){
+      a_item = this[i];
+      if (a_item === item){
+        result = i;
+        break;
+      }  
+    }
+    return result;
+  }
+}
+```
+#### 5.2.10.2 对象键值对法
+该方法执行的速度比其他任何方法都快， 就是占用的内存大一些
+**实现思路**：新建一js对象以及新数组，遍历传入数组时，**判断值是否为js对象的键**，不是的话给对象新增该键并放入新数组。
+注意点： 判断是否为js对象键时，会自动对传入的键执行“toString()”，不同的键可能会被误认为一样；例如： a\[1]、a\[“1”] 。解决上述问题还是得调用“indexOf”。
+```js
+// 速度最快， 占空间最多（空间换时间）
+function unique2(array){
+  var n = {}, r = [], len = array.length, val, type;
+    for (var i = 0; i < array.length; i++) {
+        val = array[i];
+        type = typeof val;
+        if (!n[val]) {
+            n[val] = [type];
+            r.push(val);
+        } else if (n[val].indexOf(type) < 0) {
+            n[val].push(type);
+            r.push(val);
+        }
+    }
+    return r;
+}
+```
+#### 5.2.10.3 数组下标判断法
+还是得调用“indexOf”性能跟方法1差不多
+**实现思路**：如果当前数组的第i项在当前数组中第一次出现的位置不是i，那么表示第i项是重复的，忽略掉。否则存入结果数组。
+```js
+function unique3(array){
+  var n = [array[0]]; //结果数组
+  //从第二项开始遍历
+  for(var i = 1; i < array.length; i++) {
+    //如果当前数组的第i项在当前数组中第一次出现的位置不是i，
+    //那么表示第i项是重复的，忽略掉。否则存入结果数组
+    if (array.indexOf(array[i]) == i) n.push(array[i]);
+  }
+  return n;
+}
+```
+#### 5.2.10.4 排序后相邻去除法
+虽然原生数组的”sort”方法排序结果不怎么靠谱，但在不注重顺序的去重里该缺点毫无影响。
+**实现思路**：给传入数组排序，排序后相同值相邻，然后遍历时新数组只加入不与前一值重复的值。
+```js
+// 将相同的值相邻，然后遍历去除重复值
+function unique4(array){
+  array.sort(); 
+  var re=[array[0]];
+  for(var i = 1; i < array.length; i++){
+    if( array[i] !== re[re.length-1])
+    {
+      re.push(array[i]);
+    }
+  }
+  return re;
+}
+```
+#### 5.2.10.5 优化遍历数组法
+源自外国博文，该方法的实现代码相当酷炫；实现思路：获取没重复的最右一值放入新数组。（检测到有重复值时终止当前循环同时进入顶层循环的下一轮判断）
+```js
+// 思路：获取没重复的最右一值放入新数组
+function unique5(array){
+    var r = [];
+    for(var i = 0, l = array.length; i < l; i++) {
+        for(var j = i + 1; j < l; j++){
+            if (array[i] === array[j]){
+                ++i;                   //这里++i中断了for循环，让顶层的for循环从1开始
+            }
+        }
+        r.push(array[i]);
+    }
+    return r;
+}
+```
 ## 5.3 Date类型
 使用自UTC1970年1月1日午夜开始
 创建一个日期对象
@@ -697,7 +806,7 @@ arguments.caller这个属性始终是undefined。这么定义主要为了区分a
 ### 5.5.5函数的属性和方法
 `prototype`保存所有实例方法的真正所在。例如toString和valueOf实际上都保存在prototype。
 ES5中prototype属性不可以枚举的，因此使用`for-in`无法发现
-每个函数都含有两个非继承而来的的方法`apply()``call()`.
+每个函数都含有两个非继承而来的的方法`apply()` `call()`.
 这两个值实际上等于设置函数体·`this`对象的值
 `applay()`两个参数分别是，在其中运行函数的作用域+另一个是参数数组(可以使Array的实例，也可以是arguments对象)。
 `call()`区别仅在接收参数方式不同。这个传递给函数的参数，必须逐个列出。
@@ -780,7 +889,7 @@ String包装类型的创建
 var stringObject = new String("hello world")
 继承的toString、toLocalString、valueOf返回对象所表示的基本字符串值
 #### 5.6.3.1字符方法
-`charAt()``charCodeAt()`访问字符串中特定字符的方法.
+`charAt()` `charCodeAt()`访问字符串中特定字符的方法.
 都接收一个参数，即基于0的字符位置。
 charAt() 返回**字符**
 ```js
@@ -814,7 +923,7 @@ stringValue.substring(3,-4)  //hel    3,0
 stringValue.substr(3,-4)     //""     3,0
 ```
 #### 5.6.3.3 字符串位置方法
-`indexOf()``lastIndexOf()` 查找字符串位置，只能得到**第一个**出现的位置
+`indexOf()` `lastIndexOf()` 查找字符串位置，只能得到**第一个**出现的位置
 这两个方法可接受可选的**第二个参数**，表示**从字符串中哪个位置开始搜索**
 **通过增加查找位置来遍历长字符串**
 ```js
@@ -902,7 +1011,7 @@ eval(alert(a))
 严格模式下，在外部访问不到eval()中创建的任何变量和函数。
 
 #### 5.7.1.3 Global对象的属性
-`undefined``NaN``Infinity``Object``Array``Function``Boolean``String``Number``Date``RegExp``Error``EvalError``RangeError``ReferenceError``SyntaxError``TypeError``URIError`
+`undefined` `NaN` `Infinity` `Object` `Array` `Function` `Boolean` `String` `Number` `Date` `RegExp` `Error` `EvalError` `RangeError` `ReferenceError` `SyntaxError` `TypeError` `URIError`
 
 #### 5.7.1.4 window对象
 Web浏览器将Global这个全局对象作为window对象的一部分加以实现。
@@ -1536,12 +1645,12 @@ SuperType.prototype.sayName = function(){    //原型模式-创建对象
 };
 
 function SubType(name, age){  
-    SuperType.call(this, name);              //借用构造函数-继承       第二次调用SuperType()，创建实例   这一步进行了覆盖原型操作
+    SuperType.call(this, name);              //借用构造函数-继承  第二次调用SuperType()
     
     this.age = age;
 }
 
-SubType.prototype = new SuperType();         //原型链-继承             第一次调用SuperType()，创建实例
+SubType.prototype = new SuperType();         //原型链-继承   第一次调用SuperType()
 SubType.prototype.constructor = SubType;
 SubType.prototype.sayAge = function(){
     alert(this.age);
@@ -1649,54 +1758,47 @@ anotherPerson.sayHi();  //"hi"
 **原型式继承+原型链+借用构造函数**
 ```js
 
-//原型式继承--浅复制
+//原型式继承--浅复制 可以用Object.create()代替
 function object(o){
     function F(){}
     F.prototype = o;
     return new F();
 }
-
-//原型链继承--下边这个和SubType.prototype = new SuperType();是一个意思，下边这么写的意思是为了避免多次创建SuperType()的实例
+//原型链继承--下边这个和（组合技成中的）SubType.prototype = new SuperType();的作用相同，但是下边这么写的意思是为了避免多次创建SuperType()的实例
 function inheritPrototype(subType, superType){
-    var prototype = object(superType.prototype);   //create object
+    var prototype = object(superType.prototype);   //prototype.prototype == superType.prototype
     prototype.constructor = subType;               //augment object
-    subType.prototype = prototype;                 //assign object
+    subType.prototype = prototype;                 //subType.prototype.prototype == superType.prototype
 }
-                        
+//父对象/父类/超类-的属性
 function SuperType(name){
     this.name = name;
     this.colors = ["red", "blue", "green"];
 }
-
+//超类的方法写在原型上
 SuperType.prototype.sayName = function(){
     alert(this.name);
 };
-
-//借用构造函数
-function SubType(name, age){  
+//借用构造函数-SubType本身指向Super,拥有了colors属性。SubType原型也指向了SuperType的原型，但后边会被重写
+function SubType(name, age){
     SuperType.call(this, name);
-    
     this.age = age;
 }
-
+//让SubType的prototype继承SuperType，使得之前SubType的prototype被覆盖
 inheritPrototype(SubType, SuperType);
-
+//一定要在上边重写SubType的prototype被重写之后再定义方法，否则会被覆盖
 SubType.prototype.sayAge = function(){
     alert(this.age);
 };
-
+//运用
+//先创建一个实例副本，是副本副本副本（副本会复制本身，但是不会复制原型链）
 var instance1 = new SubType("Nicholas", 29);
+//这样修改的就是副本本身，而不是原型链了
 instance1.colors.push("black");
 alert(instance1.colors);  //"red,blue,green,black"
-instance1.sayName();      //"Nicholas";
-instance1.sayAge();       //29
-
-
+//再创建一个新副本，新副本是从SubType本身复制过来的，不是从其他副本复制过来的
 var instance2 = new SubType("Greg", 27);
 alert(instance2.colors);  //"red,blue,green"
-instance2.sayName();      //"Greg";
-instance2.sayAge();       //27
-       
 ```
 ### 6.3.7 浅拷贝
 ```js
@@ -1813,6 +1915,17 @@ var funcs = createFunctions();
 for (var i=0; i < funcs.length; i++){
     document.write(funcs[i]() + "<br />");
 }
+```
+面试遇到的：
+```js
+var a = (function () {          //必须自执行，要不然返回的是一个函数
+    var name = 'zhang';
+    return (function (){        //必须自执行，要不然返回的是一个函数
+        var name = 'peng';
+        return name;
+    })();
+})();
+console.log(a);
 ```
 ### 7.2.2 关于this对象
 this被某个对象调用的时候，就指向那个对象
@@ -2168,7 +2281,7 @@ clearTimeout(timeoutId);
 用法相同
 
 ### 8.1.7 系统对话框
-`alert()``confirm()`和`prompt()`方法可以调用系统对话框向用户显示消息
+`alert()` `confirm()`和`prompt()`方法可以调用系统对话框向用户显示消息
 `confirm()`确认对话框，很像一个警告
 ```js
 if (confirm("Are you sure?")) {
@@ -2385,12 +2498,12 @@ Node.NOTATION_NODE(12);
 
 #### 10.1.1.1 了解节点具体信息：
 `nodeName`元素的标签名
-`nodeValue`
+`nodeValue` 内容
 
 #### 10.1.1.2 节点关系
 `childNodes`每个节点都有一个这个属性，其中保存着一个`NodeList`对象.
 `NodeList`是一个**类数组**元素
-访问的时候通过`[]``item()`来访问
+访问的时候通过`[]` `item()`来访问
 **将类数组转化为数组**
 `Array.prototype.slice()`方法
 ```js
@@ -2509,7 +2622,7 @@ var hasXmlDom = document.implementation.hasFeature("XML","1.0");   //判断是�
 `nodeName`的值为元素或标签名
 `nodeValue`的值为null
 `parentNode`可能是Document或Element
-子节点可能是`Element``Text``Comment``ProcessingInstruction``CDATASection``EntityReference`
+子节点可能是`Element` `Text` `Comment` `ProcessingInstruction` `CDATASection` `EntityReference`
 
 `nodeName`和`tagName`属性是相同的，都是返回访问元素的标签名，且都为**大写**，在XML和源码保持大小一致
 
@@ -3590,7 +3703,7 @@ document.documentElement.clientWidth
 ![](/images/scroll.png)
 #### 12.2.3.4 确定元素大小
 `getBoundingClientRect()`返回一个矩形对象
-4个属性：`left``top``right``bottom`
+4个属性：`left` `top` `right` `bottom`
 给出的是**相对于视口的位置**
 IE8及之前版本认为左上角坐标为(2,2)
 ```js
@@ -4227,7 +4340,7 @@ var EventUtil = {
 event.target 指向document
 规范是在document上触发load，但是所有浏览器都在window上实现了该事件，确保向后兼容
 *注意：*新图像元素**不一定要添加到文档后**才开始下载，**只要设置了src属性就会开始下载**。
-但是`<script>``<link>`的src和href必须**插入页面后**，才开始下载
+但是`<script>` `<link>`的src和href必须**插入页面后**，才开始下载
 创建图像有两种方法：
 ```js
 //方法一
@@ -4274,22 +4387,22 @@ focus和blur不冒泡，也可以在**捕获阶段**监听到他们
 IE8:mousedown-mouseup-click-无-mouseup-click-dblclick
 
 #### 13.4.3.1 客户区坐标位置
-浏览器视口位置信息保存在`clientX``clientY`属性中
+浏览器视口位置信息保存在`clientX` `clientY`属性中
 ```js
 var x = event.clientX;
 var y = event.clientY;
 ```
 #### 13.4.3.2 页面坐标位置
-页面（文档）坐标位置信息保存在`pageX``pageY`属性中
+页面（文档）坐标位置信息保存在`pageX` `pageY`属性中
 没有滚动的情况与client的值相等
 #### 13.4.3.3 屏幕坐标位置
-整个电脑屏幕的位置保存在`screenX``screenY`属性中
+整个电脑屏幕的位置保存在`screenX` `screenY`属性中
 ![](/images/screen.png)
 
 #### 13.4.3.4 修改键
 Shift、Ctrl、Alt、Meta
 DOM规定了4个属性，表示这些修改键的状态
-`shiftKey``ctrlKey``altKey``metaKey`包含的是布尔值
+`shiftKey` `ctrlKey` `altKey` `metaKey`包含的是布尔值
 被按下值为true，否则为false
 **下边为当按下某键+鼠标点击的时候触发**
 ```js
@@ -4456,7 +4569,7 @@ var EventUtil = {
 ```
 
 #### 13.4.4.3 DOM3级变化
-DOM3不再包含charCode，而包含两个新属性：`key``char`
+DOM3不再包含charCode，而包含两个新属性：`key` `char`
 `key` 取代keyCode而新增的，它的值是一个字符串，获得的值是**相应的字符**(k)，按下非字符键时，值是相应的键名（Shift）
 `char`按下字符的时候和key相同，但是非字符键的时候值为`null`
 chrome支持`keyIdentifier`属性
@@ -4654,7 +4767,7 @@ EventUtil.addHandler(document, "readystatechange", function(event){
     }
 });
 ```
-`script``link`也会触发这个事件，**来确定外部的js和css是否加载完成**
+`script` `link`也会触发这个事件，**来确定外部的js和css是否加载完成**
 这两个标签和上边代码一样，只是对象变了，不是document而是script和link节点了
 #### 13.4.7.5 pageshow和pagehide事件
 往返缓存：在用户使用浏览器的**后退和前进**按钮时加快页面的转换速度。
@@ -4687,7 +4800,7 @@ EventUtil.addHandler(document, "readystatechange", function(event){
 
 #### 13.4.7.6 hashchange事件
 以便在URL参数列表（及URL中#号后面的所有字符串）发生变化时通知开发人员。在Ajax应用中，开发人员经常要利用URL参数列表来保存状态或导航信息。
-`oldURL``newURL`分别代表变化前后的**完整URL**
+`oldURL` `newURL`分别代表变化前后的**完整URL**
 最好使用location来确定当前的参数列表
 ```js
 EventUtil.addHandler(window, "hashchange", function(event){
@@ -5085,7 +5198,7 @@ textbox.setSelectionRange(0, 3); //"Hel"
 textbox.setSelectionRange(4, 7); //"o w"
 ```
 IE8及更早版本就只能使用12章的范围来解决选择部分文本的效果了。
-`createTextRange()``moveStart()``moveEnd``collapse()`用到这些方法
+`createTextRange()` `moveStart()` `moveEnd` `collapse()`用到这些方法
 ```js
 //兼容
 (function(){
@@ -5217,7 +5330,7 @@ if(document.forms[0].checkValidity()){
 `formnovalidate`整个表单不进行验证--给提交按钮添加
 
 ## 14.3 选择框脚本
-选择框是通过`select``option`来创建的
+选择框是通过`select` `option`来创建的
 除了表单共有的属性和方法，还有
  add(newOption, relOption) ：向控件中插入新 `<option>` 元素，其位置在相关项（ relOption ）之前。
  multiple ：布尔值，表示是否允许多项选择；等价于 HTML 中的 multiple 特性。
@@ -6298,7 +6411,7 @@ EventUtil.addHandler(btn, "click", handler.handleClick.bind(handler, "my-btn"));
 
 ## 22.2 防篡改对象
 方法一：可以通过第六章里讲的手工设置属性来设置
-`[[Configurable]]``[[Writable]]``[[Enumerable]]``[[Value]]``Get``Set`
+`[[Configurable]]` `[[Writable]]` `[[Enumerable]]` `[[Value]]` `Get` `Set`
 方法二：ES5增加了几个方法
 **对象定义为防篡改，就无法撤销了**
 
@@ -6344,7 +6457,7 @@ alert(Object.isFrozen(person)); //true        已冻结
 ```
 
 ## 22.3 高级定时器
-`setTimeout()``setInterval()`指定的事件间隔表示何时添加到队列，而不是何时执行代码
+`setTimeout()` `setInterval()`指定的事件间隔表示何时添加到队列，而不是何时执行代码
 
 ### 22.3.1 重复的定时器
 `setInterval()`会在没有该定时器的任何其他代码实例时，才将定时器代码添加到队列中，这样可以避免还没有执行完，另一端定时器程序就运行了。
@@ -6500,7 +6613,7 @@ if (navigator.onLine){
     //执行离线状态时的任务
 }
 ```
-离线在线切换两个事件：`online``offline`
+离线在线切换两个事件：`online` `offline`
 
 ## 23.2 应用缓存
 应用缓存appcache
@@ -6612,7 +6725,7 @@ Other-header: other-header-value
 ### 23.3.1.3 Javascript中的cookie
 `document.cookie`返回当前页面可用的所有cookie的字符串
 例：name1=value1;name2=value2;name3=value3
-都是经过URL编码的，所以必须使用`decodeURICompoent()`来解码
+都是经过URL编码的，所以必须使用`decodeURIComponent()`来解码
 `document.cookie`也可以设置cookie，设置的字符串会被解释并**添加**到cookie集合中，并不会覆盖，除非设置的名称已经存在。
 例：
 ```js

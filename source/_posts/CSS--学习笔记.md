@@ -1139,6 +1139,8 @@ outline:#00ff00 dotted 16px;
 
 
 # 26.实践补充
+BFC规范
+在同一个BFC中的两个毗邻的块级盒在**垂直方向**的margin会发生折叠(水平方向不折叠)。
 
 ```
 overflow-y: scroll; 
@@ -1200,6 +1202,12 @@ outline:none;
 min-height：100%
 ```
 html,body{height:100%}有这个前提，min-height：100%才能撑到显示器可见的底部
+```css
+html,body{height:100%}
+container{min-height:100%;padding-bottom:40*@n!important*}      /★ 背景加这里，不要加到body和html,important防止被修改
+footer{margin-top:-40*@n*}
+```
+footer保持在底部
 ```
 max-height：100%;
 overflow:hidden;

@@ -40,8 +40,10 @@ $("div:has(p)")              //选择所有含有p标签的div元素
 $("td:parent")               //选择所有的以td为父节点的元素数组 
 ``` 
 ## 1.5可视化过滤选择器
+```js
 $("div:hidden")      //选择所有的被hidden的div元素 
-$("div:visible")     //选择所有的可视化的div元素 
+$("div:visible")     //选择所有的可视化的div元素
+```
 ## 1.6属性过滤选择器
 ``` js
 $("div[id]")                     //选择所有含有id属性的div元素 
@@ -473,8 +475,6 @@ $.merge(array1,array2)			//合并数组array1和array2
 $.unique(array)					//从数组中移除重复的DOM元素
 ```
 
-
-
 ## 9.3对象判断
 ``` js
 $.isArray(obj)			//判断对象obj是否为数组
@@ -498,15 +498,19 @@ $.holdReay(hold)			//防止触发ready事件或释放当前的保留
 ## 9.5应用实例
 1.扩展功能 
 ``` js
-//为jquery扩展了min,max两个方法
+//用法一、为jquery扩展了min,max两个方法
 $.extend({
 	min:function(a, b){return a< b?a:b; },
 	max:function(a, b){return a> b?a:b; }
 });
-//使用扩展的方法（通过"$.方法名"调用）
-alert("a=10,b=20,max="+$.max(10,20)+",min="+$.min(10,20));
+console.log($.min(10,20));
+//用法二、合并对象-后者同名属性覆盖前者
+var settings= $.extend(obj1, obj2); 
 
-//合并数组
+//用法三、合并对象-后者属性和前者合并，以后者为主
+var settings= $.extend(true, obj1, obj2);
+
+//用法四、创建新对象
 var settings= $.extend({}, obj1, obj2);
 ```
 2.each迭代 
@@ -782,4 +786,44 @@ $('input.nospace').keydown(function(e) {
 	}
 });
 ```
+### 10.29 jquery自定义框架
+```js
+//定义
+$.fn.roundabout = function(){
+    var option = (typeof arguments[0] != 'object' ) ? {} : argument[0];
+    option = {
+        title: '1',      //设置默认属性-这里可以用三元运算符
+    }
+    this.each(function(i){                      //让每个面向的对象都拥有了方法
+        haha()
+    })
+}
+//也可以用
+$.fn.extend({
+    roundabout: function(){}
+    //不建议，因为这样可能会冲突和别人的
+})
+//访问
+$(document).ready(){
+    $("#id").roundabout({
+        title：'hehe'
+    })
+}
 
+```
+### 10.30 选中切换
+```js
+$("#CheckedAll").click(function () {
+            if ($(this).is(":checked")) {
+                $("[name=items]:checkbox").prop("checked", true);     //用prop
+            } else {
+                $("[name=items]:checkbox").prop("checked", false);
+            }
+        });
+```
+### 10.31 is()和hasClass()区别
+没有区别-返回的是布尔值
+
+### 10.32 find()和has()区别
+find()是找到并选中括号内的元素
+has()是选中**包含**括号内元素的元素
