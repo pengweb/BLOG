@@ -2647,7 +2647,12 @@ alert(div.dir);        //"ltr"
 `getAttribute()`
 `setAttribute()`
 `removeAttribute()`
-如果给定的特性值不存在getAttribute()返回**null**
+如果给定的特性值不存在getAttribute()返回**null**---这点很重要来判断是否有这个属性
+```js
+if(getAttribute(disabled)==null){
+    //没有找到disabled的时候执行
+}
+```
 特性的名称是**不区分大小写的**
 非自定义的叫**公认特性**
 有两个**特殊的特性**属性值与个体Attribute()返回的值不同

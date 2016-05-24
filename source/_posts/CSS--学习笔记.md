@@ -176,13 +176,17 @@ only-of-type //只出现一次的子元素
 
 注意：
 ::before和::after其关键是依靠CSS3中的"content"属性来实现。
-不过这个属性对于img和input元素不起作用。
+单冒号(:)用于CSS3伪类，双冒号(::)用于CSS3伪元素。
+老版本用:,新版本用::
+不过这个属性对于img和input元素**不起作用**。
+
 *content配合CSS的伪类或者伪元素,一般可以做以下四件事*
 功能	功能说明
 none	不生成任何内容
 attr	插入标签属性值
 url	使用指定的绝对或相对地址插入一个外部资源(图像,声频,视频或浏览器支持的其他任何资源)
 string	插入字符串
+
 ```
 a:after {
   content:attr(title);
@@ -1139,49 +1143,132 @@ outline:#00ff00 dotted 16px;
 
 
 # 26.实践补充
-BFC规范
-在同一个BFC中的两个毗邻的块级盒在**垂直方向**的margin会发生折叠(水平方向不折叠)。
+### 26.1 BFC
+**BFC规范**-块级格式化上下文
+1.BFC化后的盒模型内部的两个上下排列的盒模型的margin会合并
+2.BFC的区域不会与float box重叠。
+3.BFC就是页面上的一个隔离的独立容器，容器里面的子元素不会影响到外面的元素。
+4.计算BFC的高度时，浮动元素也参与计算
 
+**BFC化的方法**
+`float`的值不为none。
+`overflow`的值为auto,scroll或hidden。
+`display`的值为table-cell, table-caption, inline-block中的任何一个。
+`position`的值不为relative和static。
+
+**BFC的限制和兼容**
+`overflow:hidden;`会产生显示不全的效果
+`display:inline-block`只能根据包裹元素收缩，只有IE6/7下才会撑开整个宽度
+`display:table-cell`只有IE8以上支持，同样也只能根据包裹元素收缩，**但是它还有一个特性来弥补这个缺点**，就是**你宽度值设置地再大，实际宽度也不会超过表格容器的宽度**。所以将宽度设置成9999px或者100%就没问题了
+因为table-cell这个特性，就可以实现三列自适应的局面了
+```css
+.left_div, .mid_div, .right_div {
+    height: 200px;
+    display: table-cell;
+}
+.left_div {
+    width: 50%;
+    background: #369;
+}
+.mid_div {
+    //非IE识别的属性，（>=IE8）
+    min-width: 100px;
+    width: 100px;
+    background: #697;
+}
+.right_div {
+    width: 50%;
+    background: #126;
+}
+```
+
+**BFC的应用**
+1.两栏自适应，原理左边浮动，右边BFC化后就不会和左边重叠
+```css
+ .left {
+        width: 100px;
+        height: 150px;
+        float: left;
+        margin-right:20px; //右边间隙，如果右边盒子用用margin-left:20px是得不到同样效果的，必须将left的宽也加进来，为margin-left:20px才行
+        background: #f66;
+    }
+    .right{
+        overflow:hidden;   //BFC化，这样就不会和左边重叠
+    }
+```
+**改进通用版：**
+```css
+.right {
+    display: table-cell; width: 9999px;
+    *display: inline-block; *width: auto;
+}
+```
+2.清除内部浮动，原理-在计算BFC的高度时，浮动元素也参与计算
+```css
+.par{
+    overflow:hidden;   //BFC化后，计算高度，这样子模块浮动的话，这个盒子也有高度了
+}
+.child{
+    float:left;
+}
+```
+**改进通用版**
+```css
+.clearfix {
+    *zoom: 1;
+}
+.clearfix:after {
+    content: ''; display: table; clear: both;
+}
+```
+3.防止BFC化后的盒模型内部的盒子的上下margin重合
+解决：内部两个盒子外边分别再套一个BFC化的盒模型
+
+### 26.2 内容超出框后，出现滚动条
 ```
 overflow-y: scroll; 
 ```
 
-内容超出框后，出现滚动条
+### 26.3 去除表单前边符号
 ```
 list-style-type: none;
 ```
   
-去除表单前边符号
+### 26.4 隐藏元素，不占位
 ```
 display: none; 
 ```
  
-隐藏元素，不占位
+### 26.5 隐藏元素，占位
 ```
 visibility:hidden;
 ```
   
-隐藏元素，不占位
+### 26.6 行缩进
 ```
 text-indent: -999em;
 ```
+这个的效果和overflow差不多，都是超出的部分隐藏，一般来隐藏字体，但是当隐藏字体的前提是它要是个块级元素，也可以设成font-size:0;
 
-（行缩进）这个的效果和overflow差不多，都是超出的部分隐藏，一般来隐藏字体，但是当隐藏字体的前提是它要是个块级元素，也可以设成font-size:0;
+### 26.7 消除点击边框
 ```
 *:focus{outline:none;}
 ```
-
 消除所有浏览器自带的聚焦渲染效果，为实现自己想要的效果打基础
+
+### 26.8 设置透明度
 ```
 filter:alpha(opacity=0.5)
 ```
-
 滤镜属性，设置透明度,这个主要针对IE,一般都是用opacity:0.5;
+
+
 ```
 background-color: rgba(0, 0, 0, 0.4);
 ```
-
 通过rgba来设置透明度，最后一位是设置
+
+### 26.9 去除input点击时候的边框
 ```
 outline:none;     
 -webkit-tap-highlight-color:rgba(0,0,0,0);
@@ -1191,60 +1278,66 @@ outline:none;
 -webkit-appearance: none;
 }
 ```
-去除input点击时候的边框
+
+### 26.10 修改placeholder颜色属性
 ```
 .sryzm input::-moz-placeholder { color: #cccccc; }
 .sryzm input::-webkit-input-placeholder { color:#cccccc; }
 .sryzm input:-ms-input-placeholder { color:#cccccc; }
 ```
-修改placeholder颜色属性
-```
-min-height：100%
-```
-html,body{height:100%}有这个前提，min-height：100%才能撑到显示器可见的底部
+
+### 26.11 footer保持在底部
+
 ```css
 html,body{height:100%}
 container{min-height:100%;padding-bottom:40*@n!important*}      /★ 背景加这里，不要加到body和html,important防止被修改
 footer{margin-top:-40*@n*}
 ```
-footer保持在底部
+
+### 26.12 只显示首屏
 ```
 max-height：100%;
 overflow:hidden;
 ```
 html,body{height:100%}有这个前提，就可以只显示首屏了，其他部分隐藏掉，用在h5页面
+
+### 26.13 允许独立的滚动区域和触摸回弹
 ```
 -webkit-overflow-scrolling: touch
 ```
-WebKit私有的属性（允许独立的滚动区域和触摸回弹）
+WebKit私有的属性
+
+### 26.14 Chrome显示12号以下的字体-感觉失效了
 ```
 html,body{
 -webkit-text-size-adjust:none;
 }
 ```
-Chrome显示12号以下的字体
 
+### 26.15 修改option下的字体样式
 ```
 select option {font-size:12px; font-family:微软雅黑;}
 ```
 
-修改option下的字体样式
-
+### 26.16 莫名的间距问题
 ```
 <span></span>中间有间距<span></span>
 ```
+是因为外层div没有设置字体大小，而span中间有空格，所以引起的，可以设置font-size:0;
 
-是因为外层div没有设置字体大小，而span中间有空格，所以 引起的，可以设置font-size:0;
+### 26.17 初始化line-height
 ```
 html,body{line-height:1;}
 ```
 浏览器会自动给没有设置line-leight的边框添加默认值，火狐是15px，所以这里需要定义下
+
+### 26.18 去除textarea的右下角三角和边框
 ```
 resize:none;
 outline:none;
 ```
 
-分别去除，textarea的右下角三角和边框
+### 26.19 换行属性说明
 ```
 pre {
 white-space: pre-wrap; //是否强制不换行，火狐支持，因为火狐默认给了一个white-space: pre
@@ -1253,65 +1346,55 @@ text-align:justify;   //这个和下边那个是来调整字间距的
 text-justify:inter-ideograph;
 }
 ```
-换行属性说明
+
+### 26.20 解决双边距问题
 ```
 margin-left:-1px;
 ```
 
-解决双边距问题
+### 26.21 box-sizing
 ```
 input[type=”button”], input[type=”submit”], input[type=”reset”], input[type=”file”]::-webkit-file-upload-button, button 这些元素的box-sizing属性被浏览器默认设置为border-box;
 ```
-
 解决办法：box-sizing: content-box;
 
+### 26.22 去除select默认箭头
 ```
 select {
-/*Chrome和Firefox里面的边框是不一样的，所以复写了一下*/
-border: solid 1px #000;
 /*很关键：将默认的select选择框样式清除*/
 appearance:none;
 -moz-appearance:none;
 -webkit-appearance:none;
-/*在选择框的最右侧中间显示小箭头图片*/
-background: url(“http://ourjs.github.io/static/2015/arrow.png”) no-repeat scroll right center transparent;
-/*为下拉小箭头留出一点位置，避免被文字覆盖*/
-padding-right: 14px;
-}
+
 /*清除ie的默认选择框样式清除，隐藏下拉箭头*/
 select::-ms-expand { display: none; }
 ```
 
-去除select默认箭头
+### 26.23 before after hover顺序
 ```
 .clearfix li:nth-of-type(1) :hover::before
 .clearfix li:nth-of-type(1) ::before:hover
 ```
-
 这两个是有区别的，如果没调出来可以换换，一般都是后加before
+
+### 26.24 CSS点击跳转用法
 ```
 #bg1:target{
 z-index: -1;
 }
 ```
-
 这里是#bg1.target或者slideLeft.target都行，这里前缀是跳转后那个的类或者id
 
+### 26.25修改第一个或者最后一个元素样式
 ```
 .nav-menu > li:last-child
 ```
-
 一般都是用last-child和first-child来修改第一个和最有一个li的元素项。
 
-```
->选择器和中间是空格的选择器
->选择器是第一代子元素，而空格是所有子元素
-```
-
+### 26.26 隐藏选框，来做动画
 ```
 input[type=checkbox] {
 visibility: hidden;
 }
 ```
-
-隐藏选框，来做动画
+好像除了这个也可以用appearance:none;
